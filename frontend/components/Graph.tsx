@@ -8,7 +8,6 @@ import type { NodeData, HoveredNode } from "./Scene";
 import portfolioData from "../data/portfolio-data.json";
 
 // ─── Live Demo Mapping ────────────────────────────────────────────────────────
-// This automatically pairs your raw JSON names with their deployed URLs
 const DEMO_MAP: Record<string, string> = {
   "anime-grid": "https://anime-grid-nine.vercel.app",
   "bitflow": "https://bit-flow-two.vercel.app",
@@ -45,12 +44,12 @@ export const CATEGORIES: Record<
   string,
   { color: string; glow: string; radius: number; hex: string }
 > = {
-  project:  { color: "#00f5c4", glow: "rgba(0,245,196,",   radius: 7,   hex: "#00f5c4" },
-  writing:  { color: "#ff6bbd", glow: "rgba(255,107,189,", radius: 5,   hex: "#ff6bbd" },
-  research: { color: "#a78bfa", glow: "rgba(167,139,250,", radius: 9,   hex: "#a78bfa" },
-  tool:     { color: "#ffd166", glow: "rgba(255,209,102,", radius: 6,   hex: "#ffd166" },
-  design:   { color: "#06d6a0", glow: "rgba(6,214,160,",   radius: 6.5, hex: "#06d6a0" },
-  default:  { color: "#74b3fe", glow: "rgba(116,179,254,", radius: 6,   hex: "#74b3fe" },
+  project:  { color: "#00f5c4", glow: "rgba(0,245,196,",   radius: 5.5, hex: "#00f5c4" },
+  writing:  { color: "#ff6bbd", glow: "rgba(255,107,189,", radius: 4.5, hex: "#ff6bbd" },
+  research: { color: "#a78bfa", glow: "rgba(167,139,250,", radius: 7,   hex: "#a78bfa" },
+  tool:     { color: "#ffd166", glow: "rgba(255,209,102,", radius: 5,   hex: "#ffd166" },
+  design:   { color: "#06d6a0", glow: "rgba(6,214,160,",   radius: 5.5, hex: "#06d6a0" },
+  default:  { color: "#74b3fe", glow: "rgba(116,179,254,", radius: 5,   hex: "#74b3fe" },
 };
 
 export const getCat = (cat?: string) =>
@@ -83,7 +82,7 @@ export interface SimNode extends NodeData {
   pulsePhase: number;
   trailX: number[]; trailY: number[];
   complexity: number;
-  demoUrl?: string; // Newly added property
+  demoUrl?: string;
 }
 
 export interface Edge { a: number; b: number }
@@ -193,6 +192,117 @@ export interface GraphProps {
   searchIdx: number | null;
 }
 
+// ─── Pill label renderer ──────────────────────────────────────────────────────
+/**
+ * Draws a compact, clean label pill above a node.
+ *
+ * Design decisions:
+ * - Font size is clamped to [9, 13] px and scales with projScale + hoverScale
+ *   but only when the node is large enough to read (projScale > 0.55).
+ * - LIVE nodes get a small teal dot badge instead of " ↗ LIVE" suffix so the
+ *   pill stays short.
+ * - Pill width is driven by the *name only*, keeping things tidy.
+ */
+function drawLabel(
+  ctx: CanvasRenderingContext2D,
+  nd: SimNode,
+  now: number,
+  dimAlpha: number,
+) {
+  const cfg = getCat(nd.category);
+
+  // Only show label when node is readable
+  const labelAlpha = Math.min(1, dimAlpha * (nd.projScale > 0.55 ? 1.0 : nd.hovered ? 0.8 : 0));
+  if (labelAlpha <= 0.02) return;
+
+  const r = nd.radius * nd.projScale * NODE_SCALE * nd.hoverScale;
+  const { sx, sy } = nd;
+
+  // Font — scale smoothly but clamp tightly
+  const baseFont = 10.5;
+  const fontSize = Math.max(9, Math.min(13, Math.round(baseFont * nd.projScale * (nd.hovered ? 1.1 : 1))));
+  ctx.font = `500 ${fontSize}px 'JetBrains Mono','Fira Code',monospace`;
+  ctx.textAlign   = "center";
+  ctx.textBaseline = "middle";
+
+  const nameText = nd.name;
+  const tw   = ctx.measureText(nameText).width;
+  const px   = 7, py = 3.5;
+  // Extra right padding for the live dot
+  const extraRight = nd.demoUrl ? px + 10 : 0;
+  const pw   = tw + px * 2 + extraRight;
+  const ph   = fontSize + py * 2;
+  const gap  = 6;
+  const plx  = sx - pw / 2;
+  const ply  = sy - r - ph - gap;
+
+  ctx.save();
+  ctx.globalAlpha = labelAlpha;
+
+  // Pill background
+  ctx.fillStyle   = "rgba(4,5,20,0.88)";
+  ctx.strokeStyle = nd.hovered || nd.selected
+    ? cfg.color + "99"
+    : cfg.color + "40";
+  ctx.lineWidth   = nd.hovered || nd.selected ? 1.0 : 0.6;
+  ctx.beginPath();
+  ctx.roundRect(plx, ply, pw, ph, ph / 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Category dot (left)
+  ctx.fillStyle = cfg.color;
+  ctx.globalAlpha = labelAlpha * 0.9;
+  ctx.beginPath();
+  ctx.arc(plx + px * 0.85, ply + ph / 2, 2.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Name text
+  ctx.globalAlpha = labelAlpha;
+  ctx.fillStyle   = "#e8eeff";
+  ctx.shadowColor = "rgba(0,0,0,0.9)";
+  ctx.shadowBlur  = 4;
+  // Shift text left when live badge present
+  const textOffsetX = nd.demoUrl ? -5 : 0;
+  ctx.fillText(nameText, sx + textOffsetX, ply + ph / 2);
+  ctx.shadowBlur = 0;
+
+  // LIVE badge — small pulsing dot on the right
+  if (nd.demoUrl) {
+    const pulse = (now * 0.0025 + nd.pulsePhase) % (Math.PI * 2);
+    const dotR  = 3 + Math.sin(pulse) * 0.6;
+    const dotX  = plx + pw - px * 0.85;
+    const dotY  = ply + ph / 2;
+
+    // Glow halo
+    const g = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, dotR * 3.5);
+    g.addColorStop(0,   "rgba(0,245,196,0.35)");
+    g.addColorStop(1,   "rgba(0,245,196,0)");
+    ctx.fillStyle = g;
+    ctx.globalAlpha = labelAlpha * (0.5 + Math.sin(pulse) * 0.3);
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, dotR * 3.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Solid dot
+    ctx.globalAlpha = labelAlpha;
+    ctx.fillStyle   = "#00f5c4";
+    ctx.shadowColor = "#00f5c4";
+    ctx.shadowBlur  = 6;
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  ctx.restore();
+}
+
+// ─── Core node scale multiplier ───────────────────────────────────────────────
+// Was 18 — reduced to 12 for tighter, cleaner nodes.
+// Adjust this single constant to resize all nodes globally.
+const NODE_SCALE = 12;
+
 // ─── Graph ────────────────────────────────────────────────────────────────────
 const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
   { canvas, onHover, onSelect, onNodeCount, camera, dragState, mousePos,
@@ -234,13 +344,12 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
       const theta = Math.random() * Math.PI * 2;
       const phi   = Math.acos(2 * Math.random() - 1);
       const r     = 90 + Math.random() * 70;
-      
       const safeName = (d.name ?? `Project ${i}`).toLowerCase();
-      
+
       return {
         name:        d.name ?? `Project ${i}`,
         url:         d.url  ?? "#",
-        demoUrl:     DEMO_MAP[safeName] || d.demo_url, // Maps live links
+        demoUrl:     DEMO_MAP[safeName] || d.demo_url,
         category:    cat,
         description: `Complexity score: ${Math.round(d.complexity_score ?? 0).toLocaleString()}`,
         tags:        d.tags ?? ["AI", "Development"],
@@ -323,7 +432,7 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         nd.trailX.unshift(nd.sx); nd.trailY.unshift(nd.sy);
         if (nd.trailX.length > 8) { nd.trailX.pop(); nd.trailY.pop(); }
         nd.sx = p.sx; nd.sy = p.sy; nd.projScale = p.scale; nd.projDepth = p.depth;
-        const targetScale = nd.hovered ? 1.65 : nd.selected ? 1.45 : 1.0;
+        const targetScale = nd.hovered ? 1.55 : nd.selected ? 1.38 : 1.0;
         nd.hoverScale += (targetScale - nd.hoverScale) * 0.13;
       }
 
@@ -393,8 +502,12 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         const avg  = (na.projScale + nb.projScale) / 2;
         const isHl = na.hovered || nb.hovered || na.selected || nb.selected;
         const isSel = (na.selected || nb.selected);
-        const opacity = Math.min(0.15, avg * 0.18) * (isHl ? 4 : 1);
-        if (opacity < 0.004) continue;
+        const dx = na.sx - nb.sx, dy = na.sy - nb.sy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const maxDist = window.innerWidth * 0.4;
+        const minDist = window.innerWidth * 0.1;
+        let edgeOpacity = 1 - (dist - minDist) / (maxDist - minDist);
+        edgeOpacity = Math.max(0, Math.min(1, edgeOpacity));
 
         if (isSel) {
           const selNd = na.selected ? na : nb;
@@ -402,13 +515,14 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
           const grad  = ctx.createLinearGradient(na.sx, na.sy, nb.sx, nb.sy);
           grad.addColorStop(0, cfg.glow + "0.6)");
           grad.addColorStop(1, cfg.glow + "0.06)");
-          ctx.globalAlpha = 0.55;
+          ctx.globalAlpha = 0.55 * edgeOpacity;
           ctx.strokeStyle = grad;
           ctx.lineWidth   = 1.4;
         } else {
-          ctx.globalAlpha = opacity;
+          const baseOpacity = Math.min(0.15, avg * 0.18) * (isHl ? 4 : 1);
+          ctx.globalAlpha = baseOpacity * edgeOpacity;
           ctx.strokeStyle = isHl ? getCat(na.hovered ? na.category : nb.category).color : "#00f5c4";
-          ctx.lineWidth   = isHl ? 1.1 : 0.5;
+          ctx.lineWidth   = isHl ? 1.1 : 0.8;
         }
         ctx.beginPath();
         ctx.moveTo(na.sx, na.sy);
@@ -423,11 +537,11 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         if (!nd.hovered && !nd.selected) continue;
         const cfg = getCat(nd.category);
         for (let t = 0; t < nd.trailX.length; t++) {
-          const a = (1 - t / nd.trailX.length) * 0.22;
+          const a = (1 - t / nd.trailX.length) * 0.18;
           ctx.globalAlpha = a;
           ctx.fillStyle   = cfg.color;
           ctx.beginPath();
-          const tr = nd.radius * nd.projScale * 14 * (1 - t * 0.1);
+          const tr = nd.radius * nd.projScale * NODE_SCALE * (1 - t * 0.1);
           ctx.arc(nd.trailX[t], nd.trailY[t], Math.max(1, tr), 0, Math.PI*2);
           ctx.fill();
         }
@@ -439,23 +553,24 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
 
       for (const nd of sortedNodes) {
         const cfg  = getCat(nd.category);
-        const r    = nd.radius * nd.projScale * 18 * nd.hoverScale;
+        // Core render radius — NODE_SCALE is the global tuning knob
+        const r    = nd.radius * nd.projScale * NODE_SCALE * nd.hoverScale;
         const { sx, sy } = nd;
-        if (sx < -r || sx > W+r || sy < -r || sy > H+r) continue;
+        if (sx < -r*5 || sx > W+r*5 || sy < -r*5 || sy > H+r*5) continue;
 
         const alpha    = Math.min(1, nd.projScale * 1.5);
-        const dimAlpha = nd.filtered ? alpha : alpha * 0.15;
+        const dimAlpha = nd.filtered ? alpha : alpha * 0.12;
 
         ctx.save();
         ctx.globalAlpha = dimAlpha;
 
-        // Selection ring
+        // ── Selection dashed ring ──────────────────────────────────────────
         if (nd.selected) {
           const t = now * 0.001;
-          const pulseR = r * (2.8 + Math.sin(t * 2.5) * 0.4);
-          ctx.globalAlpha = dimAlpha * (0.5 + Math.sin(t * 2.5) * 0.25);
+          const pulseR = r * (2.6 + Math.sin(t * 2.5) * 0.35);
+          ctx.globalAlpha = dimAlpha * (0.45 + Math.sin(t * 2.5) * 0.2);
           ctx.strokeStyle = cfg.color;
-          ctx.lineWidth   = 1.5;
+          ctx.lineWidth   = 1.2;
           ctx.setLineDash([5, 4]);
           ctx.lineDashOffset = -t * 12;
           ctx.beginPath();
@@ -465,119 +580,91 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         }
         ctx.globalAlpha = dimAlpha;
 
-        // Outer glow
-        const grd = ctx.createRadialGradient(sx, sy, 0, sx, sy, r * 4.2);
-        grd.addColorStop(0,   cfg.glow + "0.22)");
-        grd.addColorStop(0.4, cfg.glow + "0.07)");
+        // ── Outer glow ────────────────────────────────────────────────────
+        const glowR = r * 3.8;
+        const grd = ctx.createRadialGradient(sx, sy, 0, sx, sy, glowR);
+        grd.addColorStop(0,   cfg.glow + "0.18)");
+        grd.addColorStop(0.45, cfg.glow + "0.06)");
         grd.addColorStop(1,   cfg.glow + "0)");
         ctx.fillStyle = grd;
         ctx.beginPath();
-        ctx.arc(sx, sy, r * 4.2, 0, Math.PI*2);
+        ctx.arc(sx, sy, glowR, 0, Math.PI*2);
         ctx.fill();
 
-        // 🌟 NEW FEATURE: Rotating Orbit for LIVE DEMO Nodes
+        // ── LIVE orbit ring ───────────────────────────────────────────────
         if (nd.demoUrl) {
-          const demoPulse = (now * 0.0015 + nd.pulsePhase) % (Math.PI * 2);
+          const orbitAngle = (now * 0.0012 + nd.pulsePhase) % (Math.PI * 2);
           ctx.save();
           ctx.translate(sx, sy);
-          ctx.rotate(demoPulse);
-          ctx.globalAlpha = dimAlpha * 0.9;
-          ctx.strokeStyle = "#ffffff";
-          ctx.lineWidth = 1.2;
-          ctx.setLineDash([8, 6, 2, 6]); // High-tech dashed pattern
+          ctx.rotate(orbitAngle);
+          ctx.globalAlpha = dimAlpha * 0.55;
+          ctx.strokeStyle = "#00f5c4";
+          ctx.lineWidth   = 0.9;
+          ctx.setLineDash([6, 5, 2, 5]);
           ctx.beginPath();
-          ctx.arc(0, 0, r * 2.4, 0, Math.PI * 2);
+          ctx.arc(0, 0, r * 2.1, 0, Math.PI * 2);
           ctx.stroke();
+          ctx.setLineDash([]);
           ctx.restore();
         }
 
-        // Animated pulse ring
-        const pulse = (now * 0.001 + nd.pulsePhase) % (Math.PI * 2);
-        const ringR = r * (2.1 + Math.sin(pulse * 0.9) * 0.28);
-        ctx.globalAlpha = dimAlpha * (0.18 + Math.sin(pulse * 0.9) * 0.09) *
-          (nd.hovered ? 2.2 : nd.selected ? 2.8 : 1);
+        // ── Pulse ring ────────────────────────────────────────────────────
+        const pulse  = (now * 0.001 + nd.pulsePhase) % (Math.PI * 2);
+        const ringR  = r * (1.9 + Math.sin(pulse * 0.9) * 0.22);
+        const ringA  = dimAlpha * (0.14 + Math.sin(pulse * 0.9) * 0.07) *
+          (nd.hovered ? 2.0 : nd.selected ? 2.6 : 1);
+        ctx.globalAlpha = ringA;
         ctx.strokeStyle = cfg.color;
-        ctx.lineWidth   = 0.7;
+        ctx.lineWidth   = 0.6;
         ctx.beginPath();
         ctx.arc(sx, sy, ringR, 0, Math.PI*2);
         ctx.stroke();
 
-        // Second inner ring
-        ctx.globalAlpha = dimAlpha * (0.12 + Math.sin(pulse * 1.3 + 1) * 0.05);
+        // Inner ring
+        ctx.globalAlpha = dimAlpha * (0.09 + Math.sin(pulse * 1.3 + 1) * 0.04);
         ctx.beginPath();
-        ctx.arc(sx, sy, r * 1.55 + Math.sin(pulse*1.5)*2, 0, Math.PI*2);
+        ctx.arc(sx, sy, r * 1.4 + Math.sin(pulse * 1.5) * 1.5, 0, Math.PI*2);
         ctx.stroke();
 
-        // Core sphere
+        // ── Core sphere ───────────────────────────────────────────────────
         ctx.globalAlpha = dimAlpha;
         const coreGrd = ctx.createRadialGradient(sx - r*0.35, sy - r*0.35, 0, sx, sy, r);
-        coreGrd.addColorStop(0,   "#ffffff");
+        coreGrd.addColorStop(0,    "#ffffff");
         coreGrd.addColorStop(0.25, cfg.color + "ee");
-        coreGrd.addColorStop(0.7, cfg.color + "88");
-        coreGrd.addColorStop(1,   cfg.glow + "0.2)");
+        coreGrd.addColorStop(0.7,  cfg.color + "88");
+        coreGrd.addColorStop(1,    cfg.glow + "0.15)");
         ctx.fillStyle   = coreGrd;
         ctx.shadowColor = cfg.color;
-        ctx.shadowBlur  = r * 3.5;
+        ctx.shadowBlur  = r * 3.0;
         ctx.beginPath();
         ctx.arc(sx, sy, r, 0, Math.PI*2);
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Specular highlight
-        const specGrd = ctx.createRadialGradient(sx - r*0.3, sy - r*0.35, 0, sx - r*0.25, sy - r*0.25, r*0.5);
-        specGrd.addColorStop(0,   "rgba(255,255,255,0.75)");
-        specGrd.addColorStop(1,   "rgba(255,255,255,0)");
-        ctx.globalAlpha = dimAlpha * 0.6;
+        // ── Specular highlight ────────────────────────────────────────────
+        const specGrd = ctx.createRadialGradient(
+          sx - r*0.3, sy - r*0.35, 0,
+          sx - r*0.25, sy - r*0.25, r*0.48
+        );
+        specGrd.addColorStop(0, "rgba(255,255,255,0.7)");
+        specGrd.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.globalAlpha = dimAlpha * 0.55;
         ctx.fillStyle   = specGrd;
         ctx.beginPath();
         ctx.arc(sx, sy, r, 0, Math.PI*2);
         ctx.fill();
 
-        // 🌟 UPGRADED: Label pill with "LIVE" badge support
-        ctx.globalAlpha = Math.min(1, dimAlpha * (nd.projScale > 0.65 ? 1.2 : 0.4));
-        const fontSize  = Math.max(9, Math.round(11.5 * nd.projScale * nd.hoverScale));
-        ctx.font        = `500 ${fontSize}px 'JetBrains Mono','Fira Code',monospace`;
-        ctx.textAlign   = "center";
-        ctx.textBaseline = "middle";
-        
-        let labelText = nd.name;
-        if (nd.demoUrl) labelText += " ↗ LIVE"; // Inject visual tag
-
-        const tw   = ctx.measureText(labelText).width;
-        const px   = 8, py = 4;
-        const pw   = tw + px*2, ph = fontSize + py*2;
-        const plx  = sx - pw/2, ply = sy - r - ph - 8;
-
-        // Pill background
-        ctx.fillStyle   = "rgba(4,4,22,0.86)";
-        ctx.strokeStyle = nd.demoUrl ? "#ffffff" : cfg.color + "55"; // Brighten border if Live
-        ctx.lineWidth   = nd.demoUrl ? 1.2 : 0.8;
-        ctx.beginPath();
-        ctx.roundRect(plx, ply, pw, ph, ph/2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Category dot in pill
-        ctx.fillStyle = cfg.color;
-        ctx.beginPath();
-        ctx.arc(plx + 8, ply + ph/2, 2.5, 0, Math.PI*2);
-        ctx.fill();
-
-        // Label text
-        ctx.fillStyle   = nd.demoUrl ? "#00ffcc" : "#f0f0f8"; // Cyan text for live demos
-        ctx.shadowColor = "rgba(0,0,0,0.95)";
-        ctx.shadowBlur  = 5;
-        ctx.fillText(labelText, sx + 1, ply + ph/2);
-        ctx.shadowBlur  = 0;
-
         ctx.restore();
+
+        // ── Label ─────────────────────────────────────────────────────────
+        drawLabel(ctx, nd, now, dimAlpha);
       }
 
       // ── Hover hit-test ─────────────────────────────────────────────────────
       const mx = mousePos.current.x, my = mousePos.current.y;
       let hit: SimNode | null = null, hitDist = Infinity;
       for (const nd of visNodes) {
-        const r  = nd.radius * nd.projScale * 18 * nd.hoverScale * 1.6;
+        const r  = nd.radius * nd.projScale * NODE_SCALE * nd.hoverScale * 1.5;
         const dx = nd.sx - mx, dy = nd.sy - my;
         const d  = Math.sqrt(dx*dx + dy*dy);
         if (d < r && d < hitDist) { hitDist = d; hit = nd; }

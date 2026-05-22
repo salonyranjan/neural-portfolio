@@ -14,7 +14,7 @@ export type NodeData = {
   tags?: string[];
   index?: number;
   complexity?: number;
-  demoUrl?: string;  // Explicitly allowing the new property
+  demoUrl?: string;
   demo_url?: string;
 };
 export type HoveredNode = NodeData & { screenX: number; screenY: number };
@@ -22,49 +22,62 @@ export type HoveredNode = NodeData & { screenX: number; screenY: number };
 const CAT_KEYS = Object.keys(CATEGORIES).filter(k => k !== "default");
 
 // ─── Tooltip ──────────────────────────────────────────────────────────────────
-function NodeTooltip({
-  node, x, y,
-}: { node: HoveredNode; x: number; y: number }) {
+function NodeTooltip({ node, x, y }: { node: HoveredNode; x: number; y: number }) {
   const color = getCat(node.category).color;
   const ref   = useRef<HTMLDivElement>(null);
-  const [w, setW] = useState(0);
+  const [dims, setDims] = useState({ w: 0, h: 0 });
 
   useEffect(() => {
-    if (ref.current) setW(ref.current.offsetWidth);
+    if (ref.current) {
+      setDims({ w: ref.current.offsetWidth, h: ref.current.offsetHeight });
+    }
   }, [node.name]);
 
-  const left = x + 20 + w > window.innerWidth - 16 ? x - w - 20 : x + 20;
-  const top  = Math.max(10, Math.min(y - 70, window.innerHeight - 180));
+  const vw = typeof window !== "undefined" ? window.innerWidth : 1440;
+  const vh = typeof window !== "undefined" ? window.innerHeight : 900;
+
+  // Smart placement: prefer right of cursor, flip left if near edge
+  const OFFSET = 18;
+  const left = x + OFFSET + dims.w > vw - 16 ? x - dims.w - OFFSET : x + OFFSET;
+  const top  = Math.max(10, Math.min(y - 20, vh - dims.h - 16));
 
   return (
     <div
       ref={ref}
       style={{
-        position: "fixed", left, top,
-        pointerEvents: "none", zIndex: 60,
-        animation: "ttIn 0.14s cubic-bezier(.16,1,.3,1) forwards",
-        fontFamily: "'JetBrains Mono','Fira Code',monospace",
+        position:     "fixed",
+        left,
+        top,
+        pointerEvents: "none",
+        zIndex:        60,
+        fontFamily:   "'JetBrains Mono','Fira Code',monospace",
+        animation:    "ttIn 0.12s cubic-bezier(.16,1,.3,1) forwards",
       }}
     >
       <div style={{
-        background:     "rgba(6,5,26,0.97)",
-        border:         `1px solid ${color}22`,
-        borderLeft:     `3px solid ${color}`,
+        background:     "rgba(5,4,22,0.96)",
+        border:         `1px solid ${color}18`,
+        borderLeft:     `2px solid ${color}`,
         borderRadius:   10,
-        padding:        "14px 18px",
-        minWidth:       230,
-        maxWidth:       290,
+        padding:        "12px 16px",
+        width:          220,
         backdropFilter: "blur(32px)",
-        boxShadow:      `0 0 48px ${color}1a, 0 12px 48px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)`,
+        boxShadow:      `0 0 40px ${color}14, 0 16px 48px rgba(0,0,0,0.75)`,
       }}>
         {/* Category badge */}
         <div style={{
-          display: "inline-flex", alignItems: "center", gap: 5,
-          fontSize: 9, color: color, letterSpacing: "0.36em",
-          textTransform: "uppercase", marginBottom: 8,
-          padding: "3px 8px", borderRadius: 3,
-          background: color + "12",
-          border: `1px solid ${color}25`,
+          display:       "inline-flex",
+          alignItems:    "center",
+          gap:           5,
+          fontSize:      8,
+          color:         color,
+          letterSpacing: "0.38em",
+          textTransform: "uppercase",
+          marginBottom:  8,
+          padding:       "2px 7px",
+          borderRadius:  3,
+          background:    color + "10",
+          border:        `1px solid ${color}20`,
         }}>
           <div style={{ width: 4, height: 4, borderRadius: "50%", background: color }} />
           {node.category}
@@ -72,8 +85,12 @@ function NodeTooltip({
 
         {/* Name */}
         <div style={{
-          fontSize: 14, color: "#f5f5ff", fontWeight: 600,
-          marginBottom: 6, lineHeight: 1.3, letterSpacing: "-0.01em",
+          fontSize:      13,
+          color:         "#f0f0f8",
+          fontWeight:    600,
+          marginBottom:  4,
+          lineHeight:    1.3,
+          letterSpacing: "-0.01em",
         }}>
           {node.name}
         </div>
@@ -81,40 +98,57 @@ function NodeTooltip({
         {/* Description */}
         {node.description && (
           <div style={{
-            fontSize: 10, color: "rgba(255,255,255,0.38)",
-            lineHeight: 1.65, marginBottom: 9,
+            fontSize:     9,
+            color:        "rgba(255,255,255,0.32)",
+            lineHeight:   1.6,
+            marginBottom: 8,
           }}>
             {node.description}
           </div>
         )}
 
-        {/* Tags */}
+        {/* Tags — max 3 */}
         {node.tags?.length ? (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 9 }}>
-            {node.tags.slice(0, 4).map((t) => (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }}>
+            {node.tags.slice(0, 3).map(t => (
               <span key={t} style={{
-                fontSize: 9, color: color + "70",
-                border: `1px solid ${color}20`,
-                padding: "2px 7px", borderRadius: 3,
-                letterSpacing: "0.08em",
+                fontSize:      8,
+                color:         color + "65",
+                border:        `1px solid ${color}18`,
+                padding:       "2px 6px",
+                borderRadius:  3,
+                letterSpacing: "0.07em",
               }}>{t}</span>
             ))}
           </div>
         ) : null}
 
-        {/* Smart Click Indicator */}
+        {/* Click hint */}
         <div style={{
-          fontSize: 9, 
-          color: node.demoUrl ? "#00ffcc" : "rgba(255,255,255,0.3)",
+          fontSize:      8,
+          color:         node.demoUrl ? "#00f5c4bb" : "rgba(255,255,255,0.22)",
           letterSpacing: "0.1em",
-          fontWeight: node.demoUrl ? 600 : 400
+          fontWeight:    node.demoUrl ? 600 : 400,
+          display:       "flex",
+          alignItems:    "center",
+          gap:           5,
         }}>
-          {node.demoUrl ? "↗ LIVE DEMO AVAILABLE" : "↗ CLICK FOR DETAILS"}
+          {node.demoUrl && (
+            <span style={{
+              display:      "inline-block",
+              width:        5,
+              height:       5,
+              borderRadius: "50%",
+              background:   "#00f5c4",
+              boxShadow:    "0 0 5px #00f5c4",
+            }} />
+          )}
+          {node.demoUrl ? "Live demo available · click to open" : "Click for details"}
         </div>
       </div>
       <style>{`
         @keyframes ttIn {
-          from { opacity:0; transform:translateY(6px) scale(0.97); }
+          from { opacity:0; transform:translateY(5px) scale(0.97); }
           to   { opacity:1; transform:translateY(0)  scale(1); }
         }
       `}</style>
@@ -123,80 +157,119 @@ function NodeTooltip({
 }
 
 // ─── Node Detail Sidebar ──────────────────────────────────────────────────────
-function NodeDetail({
-  node, onClose,
-}: { node: SimNode; onClose: () => void }) {
+function NodeDetail({ node, onClose }: { node: SimNode; onClose: () => void }) {
   const color = getCat(node.category).color;
   const pct   = Math.min(100, ((node.complexity ?? 0) / 400000) * 100);
 
   return (
     <div style={{
-      position: "fixed", right: 0, top: 0, bottom: 0,
-      width: 320, zIndex: 40,
-      background:     "rgba(4,4,20,0.97)",
-      borderLeft:     `1px solid ${color}28`,
+      position:      "fixed",
+      right:         0,
+      top:           0,
+      bottom:        0,
+      width:         300,
+      zIndex:        40,
+      background:    "rgba(4,4,20,0.97)",
+      borderLeft:    `1px solid ${color}22`,
       backdropFilter: "blur(40px)",
-      fontFamily:     "'JetBrains Mono','Fira Code',monospace",
-      display:        "flex", flexDirection: "column",
-      animation:      "sideIn 0.28s cubic-bezier(.16,1,.3,1) forwards",
+      fontFamily:    "'JetBrains Mono','Fira Code',monospace",
+      display:       "flex",
+      flexDirection: "column",
+      animation:     "sideIn 0.26s cubic-bezier(.16,1,.3,1) forwards",
     }}>
       {/* Header */}
       <div style={{
-        padding: "28px 24px 20px",
-        borderBottom: `1px solid ${color}18`,
-        position: "relative",
+        padding:      "24px 22px 18px",
+        borderBottom: `1px solid ${color}14`,
+        position:     "relative",
       }}>
-        {/* Category tag */}
         <div style={{
-          fontSize: 8, color: color, letterSpacing: "0.42em",
-          textTransform: "uppercase", marginBottom: 12,
-          display: "flex", alignItems: "center", gap: 6,
+          fontSize:      8,
+          color:         color,
+          letterSpacing: "0.4em",
+          textTransform: "uppercase",
+          marginBottom:  10,
+          display:       "flex",
+          alignItems:    "center",
+          gap:           6,
         }}>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", background: color, boxShadow: `0 0 8px ${color}` }} />
+          <div style={{
+            width:     5,
+            height:    5,
+            borderRadius: "50%",
+            background:   color,
+            boxShadow:    `0 0 7px ${color}`,
+          }} />
           {node.category}
         </div>
 
         <div style={{
-          fontSize: 19, fontWeight: 700, color: "#f5f5ff",
-          lineHeight: 1.25, letterSpacing: "-0.02em", marginBottom: 8,
-          fontFamily: "'Space Grotesk','DM Sans',sans-serif",
+          fontSize:      17,
+          fontWeight:    700,
+          color:         "#f5f5ff",
+          lineHeight:    1.3,
+          letterSpacing: "-0.02em",
+          marginBottom:  7,
+          fontFamily:    "'Space Grotesk','DM Sans',sans-serif",
+          paddingRight:  32,
         }}>
           {node.name}
         </div>
 
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", lineHeight: 1.6 }}>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.28)", lineHeight: 1.6 }}>
           {node.description}
         </div>
 
-        {/* Close */}
         <button
           onClick={onClose}
           style={{
-            position: "absolute", top: 22, right: 20,
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: "50%", width: 30, height: 30,
-            color: "rgba(255,255,255,0.5)", cursor: "pointer",
-            fontSize: 14, display: "flex", alignItems: "center",
-            justifyContent: "center", transition: "all 0.15s",
+            position:       "absolute",
+            top:            20,
+            right:          18,
+            background:     "rgba(255,255,255,0.05)",
+            border:         "1px solid rgba(255,255,255,0.1)",
+            borderRadius:   "50%",
+            width:          28,
+            height:         28,
+            color:          "rgba(255,255,255,0.5)",
+            cursor:         "pointer",
+            fontSize:       13,
+            display:        "flex",
+            alignItems:     "center",
+            justifyContent: "center",
+            transition:     "all 0.15s",
+            lineHeight:     1,
           }}
           onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
           onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
         >×</button>
       </div>
 
-      {/* Stats */}
-      <div style={{ padding: "20px 24px", borderBottom: `1px solid rgba(255,255,255,0.05)` }}>
-        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.28)", letterSpacing: "0.32em", textTransform: "uppercase", marginBottom: 14 }}>
+      {/* Complexity */}
+      <div style={{ padding: "18px 22px", borderBottom: `1px solid rgba(255,255,255,0.05)` }}>
+        <div style={{
+          fontSize:      8,
+          color:         "rgba(255,255,255,0.25)",
+          letterSpacing: "0.32em",
+          textTransform: "uppercase",
+          marginBottom:  10,
+        }}>
           Complexity Score
         </div>
-        <div style={{ fontSize: 28, fontWeight: 700, color: color, fontFamily: "'Space Grotesk',sans-serif", letterSpacing: "-0.02em", marginBottom: 12 }}>
+        <div style={{
+          fontSize:      24,
+          fontWeight:    700,
+          color:         color,
+          fontFamily:    "'Space Grotesk',sans-serif",
+          letterSpacing: "-0.02em",
+          marginBottom:  10,
+        }}>
           {(node.complexity ?? 0).toLocaleString()}
         </div>
-        {/* Bar */}
-        <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
+        <div style={{ height: 2, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
           <div style={{
-            height: "100%", width: `${pct}%`,
+            height:     "100%",
+            width:      `${pct}%`,
             background: `linear-gradient(90deg, ${color}44, ${color})`,
             borderRadius: 2,
             transition: "width 0.8s cubic-bezier(.16,1,.3,1)",
@@ -206,17 +279,23 @@ function NodeDetail({
 
       {/* Tags */}
       {node.tags?.length ? (
-        <div style={{ padding: "20px 24px", borderBottom: `1px solid rgba(255,255,255,0.05)` }}>
-          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.28)", letterSpacing: "0.32em", textTransform: "uppercase", marginBottom: 12 }}>
-            Tags
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        <div style={{ padding: "18px 22px", borderBottom: `1px solid rgba(255,255,255,0.05)` }}>
+          <div style={{
+            fontSize:      8,
+            color:         "rgba(255,255,255,0.25)",
+            letterSpacing: "0.32em",
+            textTransform: "uppercase",
+            marginBottom:  10,
+          }}>Tags</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
             {node.tags.map(t => (
               <span key={t} style={{
-                fontSize: 10, color: color + "80",
-                background: color + "0d",
-                border: `1px solid ${color}20`,
-                padding: "4px 10px", borderRadius: 4,
+                fontSize:      9,
+                color:         color + "80",
+                background:    color + "0d",
+                border:        `1px solid ${color}1e`,
+                padding:       "3px 9px",
+                borderRadius:  4,
                 letterSpacing: "0.06em",
               }}>{t}</span>
             ))}
@@ -224,58 +303,70 @@ function NodeDetail({
         </div>
       ) : null}
 
-      {/* ─── Dual CTA Buttons ─── */}
-      <div style={{ padding: "20px 24px", marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
-        
-        {/* Primary Button: Live Demo */}
+      {/* CTAs */}
+      <div style={{
+        padding:       "18px 22px",
+        marginTop:     "auto",
+        display:       "flex",
+        flexDirection: "column",
+        gap:           8,
+      }}>
         {node.demoUrl && (
           <a
             href={node.demoUrl}
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              width: "100%", padding: "12px 0",
-              background: `linear-gradient(135deg, ${color}22, ${color}0a)`,
-              border: `1px solid ${color}40`,
-              borderRadius: 8, color: color,
-              textDecoration: "none", fontSize: 11,
-              fontFamily: "'JetBrains Mono',monospace",
-              letterSpacing: "0.18em", textTransform: "uppercase",
-              transition: "all 0.2s",
+              display:        "flex",
+              alignItems:     "center",
+              justifyContent: "center",
+              gap:            7,
+              width:          "100%",
+              padding:        "11px 0",
+              background:     `linear-gradient(135deg, ${color}20, ${color}08)`,
+              border:         `1px solid ${color}38`,
+              borderRadius:   7,
+              color:          color,
+              textDecoration: "none",
+              fontSize:       10,
+              fontFamily:     "'JetBrains Mono',monospace",
+              letterSpacing:  "0.16em",
+              textTransform:  "uppercase",
+              transition:     "all 0.18s",
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = `linear-gradient(135deg, ${color}35, ${color}18)`)}
-            onMouseLeave={e => (e.currentTarget.style.background = `linear-gradient(135deg, ${color}22, ${color}0a)`)}
+            onMouseEnter={e => (e.currentTarget.style.background = `linear-gradient(135deg, ${color}32, ${color}18)`)}
+            onMouseLeave={e => (e.currentTarget.style.background = `linear-gradient(135deg, ${color}20, ${color}08)`)}
           >
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: color, boxShadow: `0 0 6px ${color}`, flexShrink: 0 }} />
             Launch Live Demo ↗
           </a>
         )}
 
-        {/* Secondary Button: GitHub Repo */}
         {node.url && node.url !== "#" && (
           <a
             href={node.url}
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              width: "100%", padding: "12px 0",
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 8, color: "rgba(255,255,255,0.7)",
-              textDecoration: "none", fontSize: 11,
-              fontFamily: "'JetBrains Mono',monospace",
-              letterSpacing: "0.18em", textTransform: "uppercase",
-              transition: "all 0.2s",
+              display:        "flex",
+              alignItems:     "center",
+              justifyContent: "center",
+              gap:            7,
+              width:          "100%",
+              padding:        "11px 0",
+              background:     "rgba(255,255,255,0.03)",
+              border:         "1px solid rgba(255,255,255,0.09)",
+              borderRadius:   7,
+              color:          "rgba(255,255,255,0.6)",
+              textDecoration: "none",
+              fontSize:       10,
+              fontFamily:     "'JetBrains Mono',monospace",
+              letterSpacing:  "0.16em",
+              textTransform:  "uppercase",
+              transition:     "all 0.18s",
             }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = "rgba(255,255,255,0.08)";
-              e.currentTarget.style.color = "#ffffff";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = "rgba(255,255,255,0.03)";
-              e.currentTarget.style.color = "rgba(255,255,255,0.7)";
-            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.color = "#fff"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.color = "rgba(255,255,255,0.6)"; }}
           >
             GitHub Repository ↗
           </a>
@@ -284,8 +375,8 @@ function NodeDetail({
 
       <style>{`
         @keyframes sideIn {
-          from { transform: translateX(100%); opacity:0; }
-          to   { transform: translateX(0);   opacity:1; }
+          from { transform: translateX(100%); opacity: 0; }
+          to   { transform: translateX(0);    opacity: 1; }
         }
       `}</style>
     </div>
@@ -300,116 +391,151 @@ function SearchPanel({
   onSelect: (idx: number) => void;
   onClose: () => void;
 }) {
-  const [q, setQ] = useState("");
-  const inputRef  = useRef<HTMLInputElement>(null);
+  const [q, setQ]   = useState("");
+  const inputRef    = useRef<HTMLInputElement>(null);
+  const [active, setActive] = useState(0);
 
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+  useEffect(() => { inputRef.current?.focus(); }, []);
 
-  const results = q.trim().length > 0
+  const results = q.trim()
     ? nodes.filter(n =>
         n.name.toLowerCase().includes(q.toLowerCase()) ||
         n.category.toLowerCase().includes(q.toLowerCase())
       ).slice(0, 8)
     : nodes.slice(0, 8);
 
+  const commit = (idx: number) => { onSelect(idx); onClose(); };
+
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive(a => Math.min(a + 1, results.length - 1)); }
+    if (e.key === "ArrowUp")   { e.preventDefault(); setActive(a => Math.max(a - 1, 0)); }
+    if (e.key === "Enter" && results[active]) commit(results[active].index ?? active);
+    if (e.key === "Escape") onClose();
+  };
+
   return (
-    <div style={{
-      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-      background: "rgba(2,2,12,0.88)",
-      backdropFilter: "blur(20px)",
-      zIndex: 80, display: "flex", alignItems: "flex-start",
-      justifyContent: "center", paddingTop: "12vh",
-      animation: "fadeIn 0.15s ease forwards",
-      fontFamily: "'JetBrains Mono','Fira Code',monospace",
-    }} onClick={onClose}>
-      <div
-        style={{ width: 520, maxWidth: "90vw" }}
-        onClick={e => e.stopPropagation()}
-      >
+    <div
+      style={{
+        position:      "fixed",
+        inset:         0,
+        background:    "rgba(2,2,12,0.86)",
+        backdropFilter: "blur(20px)",
+        zIndex:        80,
+        display:       "flex",
+        alignItems:    "flex-start",
+        justifyContent: "center",
+        paddingTop:    "11vh",
+        animation:     "fadeIn 0.14s ease forwards",
+        fontFamily:    "'JetBrains Mono','Fira Code',monospace",
+      }}
+      onClick={onClose}
+    >
+      <div style={{ width: 500, maxWidth: "90vw" }} onClick={e => e.stopPropagation()}>
         {/* Input */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 12,
-          background: "rgba(8,8,32,0.98)",
-          border: "1px solid rgba(0,245,196,0.3)",
-          borderRadius: 12, padding: "14px 18px",
-          boxShadow: "0 0 48px rgba(0,245,196,0.08), 0 24px 64px rgba(0,0,0,0.7)",
-          marginBottom: 8,
+          display:      "flex",
+          alignItems:   "center",
+          gap:          10,
+          background:   "rgba(8,8,30,0.98)",
+          border:       "1px solid rgba(0,245,196,0.28)",
+          borderRadius: 11,
+          padding:      "13px 16px",
+          boxShadow:    "0 0 40px rgba(0,245,196,0.07), 0 20px 60px rgba(0,0,0,0.7)",
+          marginBottom: 6,
         }}>
-          <span style={{ color: "rgba(0,245,196,0.6)", fontSize: 16 }}>⌕</span>
+          <span style={{ color: "rgba(0,245,196,0.55)", fontSize: 15, flexShrink: 0 }}>⌕</span>
           <input
             ref={inputRef}
             value={q}
-            onChange={e => setQ(e.target.value)}
-            placeholder="Search nodes..."
+            onChange={e => { setQ(e.target.value); setActive(0); }}
+            onKeyDown={onKey}
+            placeholder="Search nodes…"
             style={{
-              flex: 1, background: "none", border: "none", outline: "none",
-              color: "#f5f5ff", fontSize: 15, fontFamily: "'JetBrains Mono',monospace",
+              flex:       1,
+              background: "none",
+              border:     "none",
+              outline:    "none",
+              color:      "#f0f0f8",
+              fontSize:   14,
+              fontFamily: "'JetBrains Mono',monospace",
               caretColor: "#00f5c4",
             }}
           />
           <kbd style={{
-            fontSize: 10, color: "rgba(255,255,255,0.22)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            padding: "3px 8px", borderRadius: 4,
+            fontSize:  9,
+            color:     "rgba(255,255,255,0.2)",
+            border:    "1px solid rgba(255,255,255,0.1)",
+            padding:   "2px 7px",
+            borderRadius: 4,
+            flexShrink: 0,
           }}>ESC</kbd>
         </div>
 
         {/* Results */}
         <div style={{
-          background: "rgba(8,8,32,0.98)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          borderRadius: 12,
-          overflow: "hidden",
-          boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
+          background:   "rgba(8,8,30,0.98)",
+          border:       "1px solid rgba(255,255,255,0.07)",
+          borderRadius: 11,
+          overflow:     "hidden",
+          boxShadow:    "0 20px 60px rgba(0,0,0,0.6)",
         }}>
           {results.length === 0 ? (
-            <div style={{ padding: "20px 18px", color: "rgba(255,255,255,0.28)", fontSize: 12 }}>
+            <div style={{ padding: "18px 16px", color: "rgba(255,255,255,0.25)", fontSize: 11 }}>
               No results for "{q}"
             </div>
           ) : results.map((nd, i) => {
-            const color = getCat(nd.category).color;
+            const color   = getCat(nd.category).color;
+            const isActive = i === active;
             return (
               <div
                 key={nd.index ?? i}
-                onClick={() => { onSelect(nd.index ?? i); onClose(); }}
+                onClick={() => commit(nd.index ?? i)}
+                onMouseEnter={() => setActive(i)}
                 style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  padding: "12px 18px",
-                  borderBottom: i < results.length - 1
-                    ? "1px solid rgba(255,255,255,0.05)" : "none",
-                  cursor: "pointer", transition: "background 0.1s",
+                  display:      "flex",
+                  alignItems:   "center",
+                  gap:          10,
+                  padding:      "11px 16px",
+                  borderBottom: i < results.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                  cursor:       "pointer",
+                  background:   isActive ? "rgba(255,255,255,0.05)" : "transparent",
+                  transition:   "background 0.08s",
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
-                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
               >
                 <div style={{
-                  width: 10, height: 10, borderRadius: "50%",
-                  background: color, flexShrink: 0,
-                  boxShadow: `0 0 8px ${color}88`,
+                  width:      8,
+                  height:     8,
+                  borderRadius: "50%",
+                  background:   color,
+                  flexShrink:   0,
+                  boxShadow:    isActive ? `0 0 8px ${color}` : "none",
+                  transition:   "box-shadow 0.1s",
                 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                 <div style={{ 
-  fontSize: 13, 
-  color: "#f0f0f8", 
-  fontWeight: 500, 
-  whiteSpace: "nowrap", 
-  overflow: "hidden", 
-  textOverflow: "ellipsis" 
-}}>
-  {nd.name}
-</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>
+                  <div style={{
+                    fontSize:     12,
+                    color:        isActive ? "#fff" : "#e8e8f8",
+                    fontWeight:   500,
+                    whiteSpace:   "nowrap",
+                    overflow:     "hidden",
+                    textOverflow: "ellipsis",
+                    transition:   "color 0.1s",
+                  }}>
+                    {nd.name}
+                  </div>
+                  <div style={{ fontSize: 9, color: "rgba(255,255,255,0.28)", marginTop: 2 }}>
                     {nd.category} · {(nd.complexity ?? 0).toLocaleString()}
                   </div>
                 </div>
                 <div style={{
-                  fontSize: 10, color: color + "60",
-                  background: color + "0d",
-                  border: `1px solid ${color}20`,
-                  padding: "2px 8px", borderRadius: 3,
+                  fontSize:      8,
+                  color:         color + "55",
+                  background:    color + "0c",
+                  border:        `1px solid ${color}1a`,
+                  padding:       "2px 7px",
+                  borderRadius:  3,
                   letterSpacing: "0.06em",
+                  flexShrink:    0,
                 }}>
                   {nd.category}
                 </div>
@@ -419,14 +545,16 @@ function SearchPanel({
         </div>
 
         <div style={{
-          marginTop: 12, textAlign: "center",
-          fontSize: 10, color: "rgba(255,255,255,0.2)",
-          letterSpacing: "0.12em",
+          marginTop:     10,
+          textAlign:     "center",
+          fontSize:      9,
+          color:         "rgba(255,255,255,0.18)",
+          letterSpacing: "0.1em",
         }}>
-          ↑↓ Navigate · Enter Select · Esc Close
+          ↑↓ navigate · Enter select · Esc close
         </div>
       </div>
-      <style>{`@keyframes fadeIn { from{opacity:0} to{opacity:1} }`}</style>
+      <style>{`@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }`}</style>
     </div>
   );
 }
@@ -452,250 +580,321 @@ function HUD({
 
   return (
     <>
-      {/* ── Top-left title ── */}
+      {/* Top-left title */}
       <div style={{
-        position: "fixed", top: 26, left: 30,
-        fontFamily: "'JetBrains Mono','Fira Code',monospace",
-        pointerEvents: "none", zIndex: 20,
+        position:      "fixed",
+        top:           24,
+        left:          28,
+        fontFamily:    "'JetBrains Mono','Fira Code',monospace",
+        pointerEvents: "none",
+        zIndex:        20,
       }}>
         <div style={{
-          fontSize: 8, letterSpacing: "0.44em",
-          color: "rgba(0,245,196,0.55)", marginBottom: 5,
+          fontSize:      7,
+          letterSpacing: "0.46em",
+          color:         "rgba(0,245,196,0.5)",
+          marginBottom:  5,
           textTransform: "uppercase",
         }}>Neural Portfolio</div>
         <div style={{
-          fontSize: 26, fontWeight: 800, color: "#f5f5ff",
+          fontSize:      24,
+          fontWeight:    800,
+          color:         "#f5f5ff",
           letterSpacing: "-0.025em",
-          fontFamily: "'Space Grotesk','DM Sans',sans-serif",
-          lineHeight: 1,
+          fontFamily:    "'Space Grotesk','DM Sans',sans-serif",
+          lineHeight:    1,
         }}>
           Knowledge Graph
         </div>
         <div style={{
-          fontSize: 10, color: "rgba(255,255,255,0.22)",
-          marginTop: 6, letterSpacing: "0.14em",
-          display: "flex", alignItems: "center", gap: 8,
+          fontSize:    9,
+          color:       "rgba(255,255,255,0.2)",
+          marginTop:   6,
+          letterSpacing: "0.12em",
+          display:     "flex",
+          alignItems:  "center",
+          gap:         7,
         }}>
-          <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: "#00f5c4", boxShadow: "0 0 6px #00f5c4" }} />
+          <span style={{
+            display:      "inline-block",
+            width:        5,
+            height:       5,
+            borderRadius: "50%",
+            background:   "#00f5c4",
+            boxShadow:    "0 0 5px #00f5c4",
+          }} />
           {nodeCount} nodes · force-directed · 3D
         </div>
       </div>
 
-      {/* ── Top-right controls bar ── */}
+      {/* Top-right */}
       <div style={{
-        position: "fixed", top: 22, right: 28,
-        fontFamily: "'JetBrains Mono','Fira Code',monospace",
-        zIndex: 20, display: "flex", flexDirection: "column",
-        alignItems: "flex-end", gap: 10,
+        position:      "fixed",
+        top:           20,
+        right:         26,
+        fontFamily:    "'JetBrains Mono','Fira Code',monospace",
+        zIndex:        20,
+        display:       "flex",
+        flexDirection: "column",
+        alignItems:    "flex-end",
+        gap:           9,
       }}>
-        {/* Time + FPS */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, pointerEvents: "none" }}>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.18)", letterSpacing: "0.18em" }}>
+        <div style={{
+          display:       "flex",
+          alignItems:    "center",
+          gap:           12,
+          pointerEvents: "none",
+        }}>
+          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.16)", letterSpacing: "0.18em" }}>
             {time}
           </div>
           <div style={{
-            fontSize: 9, letterSpacing: "0.22em",
-            color: fps > 50 ? "#00f5c488" : fps > 30 ? "#ffd16688" : "#ff6b6b88",
-            padding: "2px 8px",
-            border: `1px solid ${fps > 50 ? "#00f5c420" : fps > 30 ? "#ffd16620" : "#ff6b6b20"}`,
-            borderRadius: 4,
+            fontSize:      8,
+            letterSpacing: "0.22em",
+            color:         fps > 50 ? "#00f5c480" : fps > 30 ? "#ffd16680" : "#ff6b6b80",
+            padding:       "2px 7px",
+            border:        `1px solid ${fps > 50 ? "#00f5c420" : fps > 30 ? "#ffd16620" : "#ff6b6b20"}`,
+            borderRadius:  4,
           }}>
             {fps} FPS
           </div>
         </div>
 
-        {/* Search button */}
         <button
           onClick={onSearch}
           style={{
-            background:   "rgba(0,245,196,0.07)",
-            border:       "1px solid rgba(0,245,196,0.25)",
-            borderRadius: 8, padding: "8px 14px",
-            color:        "#00f5c4", cursor: "pointer",
-            fontSize:     10, letterSpacing: "0.2em",
-            fontFamily:   "'JetBrains Mono',monospace",
+            background:    "rgba(0,245,196,0.06)",
+            border:        "1px solid rgba(0,245,196,0.22)",
+            borderRadius:  8,
+            padding:       "7px 13px",
+            color:         "#00f5c4",
+            cursor:        "pointer",
+            fontSize:      9,
+            letterSpacing: "0.2em",
+            fontFamily:    "'JetBrains Mono',monospace",
             textTransform: "uppercase",
-            display:      "flex", alignItems: "center", gap: 7,
-            transition:   "all 0.18s",
+            display:       "flex",
+            alignItems:    "center",
+            gap:           6,
+            transition:    "all 0.16s",
           }}
-          onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,245,196,0.14)")}
-          onMouseLeave={e => (e.currentTarget.style.background = "rgba(0,245,196,0.07)")}
+          onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,245,196,0.12)")}
+          onMouseLeave={e => (e.currentTarget.style.background = "rgba(0,245,196,0.06)")}
         >
-          <span style={{ fontSize: 14 }}>⌕</span>
+          <span style={{ fontSize: 13 }}>⌕</span>
           Search
           <kbd style={{
-            fontSize: 9, color: "rgba(0,245,196,0.45)",
-            border: "1px solid rgba(0,245,196,0.2)",
-            padding: "1px 6px", borderRadius: 3,
+            fontSize:     8,
+            color:        "rgba(0,245,196,0.4)",
+            border:       "1px solid rgba(0,245,196,0.18)",
+            padding:      "1px 5px",
+            borderRadius: 3,
           }}>⌘K</kbd>
         </button>
       </div>
 
-      {/* ── Bottom-left: Category filters ── */}
+      {/* Bottom-left: categories */}
       <div style={{
-        position: "fixed", bottom: 30, left: 30,
+        position:  "fixed",
+        bottom:    28,
+        left:      28,
         fontFamily: "'JetBrains Mono','Fira Code',monospace",
-        zIndex: 20,
+        zIndex:    20,
       }}>
         <div style={{
-          fontSize: 8, color: "rgba(255,255,255,0.2)",
-          letterSpacing: "0.34em", marginBottom: 14,
+          fontSize:      7,
+          color:         "rgba(255,255,255,0.18)",
+          letterSpacing: "0.36em",
+          marginBottom:  12,
           textTransform: "uppercase",
         }}>Categories</div>
 
-        {/* "All" chip */}
         <div
           onClick={() => onFilter(null)}
           style={{
-            display: "flex", alignItems: "center", gap: 8,
-            marginBottom: 8, cursor: "pointer",
-            opacity: filterCat === null ? 1 : 0.45,
+            display:    "flex",
+            alignItems: "center",
+            gap:        7,
+            marginBottom: 7,
+            cursor:     "pointer",
+            opacity:    filterCat === null ? 1 : 0.42,
             transition: "opacity 0.15s",
           }}
         >
           <div style={{
-            width: 20, height: 20, borderRadius: 5,
-            background: filterCat === null
-              ? "rgba(255,255,255,0.12)"
-              : "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.15)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 9, color: "rgba(255,255,255,0.6)",
-            transition: "all 0.15s",
+            width:          18,
+            height:         18,
+            borderRadius:   4,
+            background:     filterCat === null ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.03)",
+            border:         "1px solid rgba(255,255,255,0.12)",
+            display:        "flex",
+            alignItems:     "center",
+            justifyContent: "center",
+            fontSize:       8,
+            color:          "rgba(255,255,255,0.5)",
+            transition:     "all 0.15s",
           }}>✦</div>
-          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", letterSpacing: "0.1em" }}>
+          <span style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em" }}>
             All nodes
           </span>
         </div>
 
-        {CAT_KEYS.map((cat) => {
-          const cfg     = getCat(cat);
-          const active  = filterCat === cat;
+        {CAT_KEYS.map(cat => {
+          const cfg    = getCat(cat);
+          const active = filterCat === cat;
           return (
             <div
               key={cat}
               onClick={() => onFilter(active ? null : cat)}
               style={{
-                display: "flex", alignItems: "center", gap: 8,
-                marginBottom: 7, cursor: "pointer",
-                opacity: filterCat !== null && !active ? 0.35 : 1,
+                display:    "flex",
+                alignItems: "center",
+                gap:        7,
+                marginBottom: 6,
+                cursor:     "pointer",
+                opacity:    filterCat !== null && !active ? 0.3 : 1,
                 transition: "opacity 0.15s",
               }}
             >
               <div style={{
-                width: 9, height: 9, borderRadius: "50%",
-                background: cfg.color,
-                boxShadow: active ? `0 0 10px ${cfg.color}` : `0 0 4px ${cfg.color}44`,
-                transition: "box-shadow 0.2s",
+                width:      8,
+                height:     8,
+                borderRadius: "50%",
+                background:   cfg.color,
+                boxShadow:    active ? `0 0 9px ${cfg.color}` : `0 0 3px ${cfg.color}44`,
+                transition:   "box-shadow 0.2s",
+                flexShrink:   0,
               }} />
               <span style={{
-                fontSize: 10,
-                color: active ? cfg.color : "rgba(255,255,255,0.38)",
-                letterSpacing: "0.1em", textTransform: "capitalize",
-                transition: "color 0.15s",
-                fontWeight: active ? 500 : 400,
+                fontSize:      9,
+                color:         active ? cfg.color : "rgba(255,255,255,0.35)",
+                letterSpacing: "0.1em",
+                textTransform: "capitalize",
+                transition:    "color 0.15s",
+                fontWeight:    active ? 600 : 400,
               }}>{cat}</span>
-              {active && (
-                <div style={{
-                  fontSize: 8, color: cfg.color + "70",
-                  background: cfg.color + "10",
-                  border: `1px solid ${cfg.color}25`,
-                  padding: "1px 5px", borderRadius: 3,
-                }}>active</div>
-              )}
             </div>
           );
         })}
       </div>
 
-      {/* ── Bottom-right: Controls ── */}
+      {/* Bottom-right: controls */}
       <div style={{
-        position: "fixed", bottom: 30, right: 30,
-        fontFamily: "'JetBrains Mono','Fira Code',monospace",
-        textAlign: "right", zIndex: 20, pointerEvents: "none",
+        position:      "fixed",
+        bottom:        28,
+        right:         26,
+        fontFamily:    "'JetBrains Mono','Fira Code',monospace",
+        textAlign:     "right",
+        zIndex:        20,
+        pointerEvents: "none",
       }}>
         <div style={{
-          fontSize: 8, color: "rgba(255,255,255,0.2)",
-          letterSpacing: "0.34em", marginBottom: 14, textTransform: "uppercase",
+          fontSize:      7,
+          color:         "rgba(255,255,255,0.18)",
+          letterSpacing: "0.36em",
+          marginBottom:  10,
+          textTransform: "uppercase",
         }}>Controls</div>
-        {[
-          ["Drag",     "Rotate"],
-          ["Scroll",   "Zoom"],
-          ["Click",    "Open node"],
-          ["⌘K",       "Search"],
-        ].map(([key, action]) => (
+        {[["Drag","Rotate"],["Scroll","Zoom"],["Click","Open node"],["⌘K","Search"]].map(([key, action]) => (
           <div key={key} style={{
-            display: "flex", alignItems: "center",
-            justifyContent: "flex-end", gap: 10, marginBottom: 6,
+            display:     "flex",
+            alignItems:  "center",
+            justifyContent: "flex-end",
+            gap:         9,
+            marginBottom: 5,
           }}>
-            <span style={{ fontSize: 9, color: "rgba(255,255,255,0.22)" }}>{action}</span>
+            <span style={{ fontSize: 8, color: "rgba(255,255,255,0.2)" }}>{action}</span>
             <span style={{
-              fontSize: 9, color: "#00f5c466",
-              border: "1px solid #00f5c420",
-              padding: "2px 8px", borderRadius: 3,
-              letterSpacing: "0.08em",
+              fontSize:      8,
+              color:         "#00f5c455",
+              border:        "1px solid #00f5c418",
+              padding:       "2px 7px",
+              borderRadius:  3,
+              letterSpacing: "0.07em",
             }}>{key}</span>
           </div>
         ))}
       </div>
 
-      {/* ── Scanlines ── */}
+      {/* Scanlines */}
       <div style={{
-        position: "fixed", inset: 0, pointerEvents: "none", zIndex: 5,
-        background: "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.018) 2px,rgba(0,0,0,0.018) 4px)",
+        position:      "fixed",
+        inset:         0,
+        pointerEvents: "none",
+        zIndex:        5,
+        background:    "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.016) 2px,rgba(0,0,0,0.016) 4px)",
       }} />
 
-      {/* ── Vignette ── */}
+      {/* Vignette */}
       <div style={{
-        position: "fixed", inset: 0, pointerEvents: "none", zIndex: 4,
-        background: "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 50%, rgba(2,2,14,0.55) 100%)",
+        position:      "fixed",
+        inset:         0,
+        pointerEvents: "none",
+        zIndex:        4,
+        background:    "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 50%, rgba(2,2,14,0.52) 100%)",
       }} />
 
-      {/* ── Centre radial glow ── */}
+      {/* Centre glow */}
       <div style={{
-        position: "fixed", inset: 0, pointerEvents: "none", zIndex: 1,
-        background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0,245,196,0.03) 0%, transparent 68%)",
+        position:      "fixed",
+        inset:         0,
+        pointerEvents: "none",
+        zIndex:        1,
+        background:    "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0,245,196,0.025) 0%, transparent 68%)",
       }} />
 
-      {/* ── Corner brackets ── */}
+      {/* Corner brackets */}
       {[
-        { top: 0, left:  0, borderTop:    "1px solid #00f5c428", borderLeft:   "1px solid #00f5c428" },
-        { top: 0, right: 0, borderTop:    "1px solid #00f5c428", borderRight:  "1px solid #00f5c428" },
-        { bottom:0, left:  0, borderBottom:"1px solid #00f5c428", borderLeft:   "1px solid #00f5c428" },
-        { bottom:0, right: 0, borderBottom:"1px solid #00f5c428", borderRight:  "1px solid #00f5c428" },
+        { top: 0,    left:  0,  borderTop:    "1px solid #00f5c422", borderLeft:    "1px solid #00f5c422" },
+        { top: 0,    right: 0,  borderTop:    "1px solid #00f5c422", borderRight:   "1px solid #00f5c422" },
+        { bottom: 0, left:  0,  borderBottom: "1px solid #00f5c422", borderLeft:    "1px solid #00f5c422" },
+        { bottom: 0, right: 0,  borderBottom: "1px solid #00f5c422", borderRight:   "1px solid #00f5c422" },
       ].map((s, i) => (
-        <div key={i} style={{ position:"fixed", width:36, height:36, pointerEvents:"none", zIndex:20, ...s as any }} />
+        <div key={i} style={{ position: "fixed", width: 32, height: 32, pointerEvents: "none", zIndex: 20, ...s as any }} />
       ))}
     </>
   );
 }
 
-// ─── Mini stats strip ─────────────────────────────────────────────────────────
+// ─── Stats Strip ──────────────────────────────────────────────────────────────
 function StatsStrip({ nodes }: { nodes: SimNode[] }) {
   if (!nodes.length) return null;
-  const byCat = CAT_KEYS.map(cat => ({
-    cat, count: nodes.filter(n => n.category === cat).length,
-    color: getCat(cat).color,
-  })).filter(x => x.count > 0);
+  const byCat = CAT_KEYS
+    .map(cat => ({ cat, count: nodes.filter(n => n.category === cat).length, color: getCat(cat).color }))
+    .filter(x => x.count > 0);
 
   return (
     <div style={{
-      position: "fixed", bottom: 30, left: "50%", transform: "translateX(-50%)",
-      fontFamily: "'JetBrains Mono',monospace",
-      display: "flex", gap: 1, zIndex: 20, pointerEvents: "none",
-      background: "rgba(4,4,22,0.7)",
-      border: "1px solid rgba(255,255,255,0.07)",
-      borderRadius: 8, overflow: "hidden",
+      position:       "fixed",
+      bottom:         28,
+      left:           "50%",
+      transform:      "translateX(-50%)",
+      fontFamily:     "'JetBrains Mono',monospace",
+      display:        "flex",
+      gap:            1,
+      zIndex:         20,
+      pointerEvents:  "none",
+      background:     "rgba(4,4,20,0.72)",
+      border:         "1px solid rgba(255,255,255,0.06)",
+      borderRadius:   8,
+      overflow:       "hidden",
       backdropFilter: "blur(20px)",
     }}>
       {byCat.map(({ cat, count, color }) => (
-        <div key={cat} style={{ padding: "8px 14px", textAlign: "center" }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color, letterSpacing: "-0.01em" }}>
-            {count}
-          </div>
-          <div style={{ fontSize: 8, color: "rgba(255,255,255,0.28)", textTransform: "uppercase", letterSpacing: "0.2em", marginTop: 2 }}>
-            {cat}
-          </div>
+        <div key={cat} style={{ padding: "7px 13px", textAlign: "center" }}>
+          <div style={{
+            fontSize:      14,
+            fontWeight:    600,
+            color,
+            letterSpacing: "-0.01em",
+          }}>{count}</div>
+          <div style={{
+            fontSize:      7,
+            color:         "rgba(255,255,255,0.25)",
+            textTransform: "uppercase",
+            letterSpacing: "0.2em",
+            marginTop:     2,
+          }}>{cat}</div>
         </div>
       ))}
     </div>
@@ -704,13 +903,13 @@ function StatsStrip({ nodes }: { nodes: SimNode[] }) {
 
 // ─── Scene ────────────────────────────────────────────────────────────────────
 export default function Scene() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef  = useRef<HTMLCanvasElement>(null);
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
-  const graphRef  = useRef<GraphHandle>(null);
+  const graphRef   = useRef<GraphHandle>(null);
 
-  const mousePos  = useRef({ x: -9999, y: -9999 });
-  const dragState = useRef({ active: false, moved: false });
-  const camera    = useRef({
+  const mousePos   = useRef({ x: -9999, y: -9999 });
+  const dragState  = useRef({ active: false, moved: false });
+  const camera     = useRef({
     rotX: 0.28, rotY: 0, zoom: 1.0,
     targetRotX: 0.28, targetRotY: 0, targetZoom: 1.0,
   }).current;
@@ -750,20 +949,13 @@ export default function Scene() {
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setSearchOpen(true);
-      }
-      if (e.key === "Escape") {
-        setSearchOpen(false);
-        setSelected(null);
-      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setSearchOpen(true); }
+      if (e.key === "Escape") { setSearchOpen(false); setSelected(null); }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  // ── Input handlers ──────────────────────────────────────────────────────────
   const onMouseMove = useCallback((e: React.MouseEvent) => {
     mousePos.current = { x: e.clientX, y: e.clientY };
     setTooltipPos({ x: e.clientX, y: e.clientY });
@@ -792,7 +984,6 @@ export default function Scene() {
     if (!wasDrag) {
       const nd = graphRef.current?.getHovered();
       if (nd) {
-        // Select node → open sidebar
         setSelected(nd as SimNode);
         graphRef.current?.focusNode(nd.index ?? 0);
       }
@@ -836,14 +1027,11 @@ export default function Scene() {
       const nd = graphRef.current?.getHovered();
       if (nd) setSelected(nd as SimNode);
     }
-    touchRef.current    = null;
-    mousePos.current    = { x: -9999, y: -9999 };
+    touchRef.current = null;
+    mousePos.current = { x: -9999, y: -9999 };
   }, []);
 
-  const onHover = useCallback((node: HoveredNode | null) => {
-    setHovered(node);
-  }, []);
-
+  const onHover  = useCallback((node: HoveredNode | null) => { setHovered(node); }, []);
   const onSelect = useCallback((node: SimNode | null) => {
     setSelected(node);
     if (node) setAllNodes(graphRef.current?.getNodes() ?? []);
@@ -851,7 +1039,6 @@ export default function Scene() {
 
   const handleNodeCountChange = useCallback((n: number) => {
     setNodeCount(n);
-    // Grab refs after first build
     setTimeout(() => setAllNodes(graphRef.current?.getNodes() ?? []), 200);
   }, []);
 
@@ -862,10 +1049,12 @@ export default function Scene() {
 
   return (
     <div style={{
-      width: "100vw", height: "100vh",
-      position: "fixed", inset: 0,
+      width:     "100vw",
+      height:    "100vh",
+      position:  "fixed",
+      inset:     0,
       background: "#030310",
-      overflow: "hidden",
+      overflow:  "hidden",
     }}>
       <canvas
         ref={canvasRef}
@@ -913,10 +1102,8 @@ export default function Scene() {
           node={selected}
           onClose={() => {
             setSelected(null);
-            // Deselect in simulation
             if (graphRef.current) {
-              const ns = graphRef.current.getNodes();
-              ns.forEach(n => { (n as SimNode).selected = false; });
+              graphRef.current.getNodes().forEach(n => { (n as SimNode).selected = false; });
             }
           }}
         />

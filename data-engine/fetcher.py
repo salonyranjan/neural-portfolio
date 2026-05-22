@@ -4,68 +4,85 @@ from datetime import datetime, timedelta, timezone
 import json
 import time
 
+# 1. Setup GitHub Auth
 token = os.getenv('GITHUB_TOKEN')
 if not token:
-    raise ValueError("GITHUB_TOKEN environment variable is not set")
+    raise ValueError("GITHUB_TOKEN environment variable is not set!")
 
 g = Github(token)
 user = g.get_user()
 
-RECENT_DAYS = 7
-AVG_LINE_LENGTH = 50
+# Constants
+RECENT_DAYS = 14  # Projects updated within 2 weeks get a boost
+AVG_LINE_LENGTH = 50 
 
-def get_total_lines_of_code(repo):
-    return (repo.size * 1024) // AVG_LINE_LENGTH
-
-def is_recently_deployed(repo):
+def get_repo_complexity(repo):
+    """Calculates a normalized score based on size and activity."""
+    # repo.size is in KB
+    total_lines_estimate = (repo.size * 1024) // AVG_LINE_LENGTH
+    
+    # Calculate recency bonus
     try:
-        # Use get_commits() to check the latest commit date efficiently
-        latest_commit = repo.get_commits()[0]
-        commit_date = latest_commit.commit.author.date.replace(tzinfo=timezone.utc)
-        return datetime.now(timezone.utc) - commit_date < timedelta(days=RECENT_DAYS)
-    except Exception:
-        return False
+        last_push = repo.pushed_at.replace(tzinfo=timezone.utc)
+        is_recent = 1 if (datetime.now(timezone.utc) - last_push < timedelta(days=RECENT_DAYS)) else 0
+    except:
+        is_recent = 0
+
+    # Complexity Algorithm: Heavily weight size and commit history
+    # We add a 30% boost if the repo was recently touched
+    base_score = (total_lines_estimate * 0.5) + (repo.stargazers_count * 20)
+    final_score = base_score * (1.3 if is_recent else 1.0)
+    
+    return round(final_score, 2)
 
 def fetch_repositories():
     repos = []
-    seen_names = set() # To prevent duplicates
+    print(f"🚀 Initializing Neural Map Fetcher for: {user.login}")
     
-    print(f"Fetching repositories for {user.login}...")
-    
-    for repo in user.get_repos():
-        # 1. Skip forks to ensure only YOUR projects are visualized
-        # 2. Skip if we've already processed this name
-        if repo.fork or repo.name in seen_names:
+    # Sort by updated time, newest first
+    for repo in user.get_repos(sort='updated', direction='desc'):
+        # Filter: Skip forks, private repos, or non-portfolio work
+        if repo.fork or repo.private:
             continue
             
         try:
-            total_lines = get_total_lines_of_code(repo)
-            commit_count = repo.get_commits().totalCount
-            recent = 1 if is_recently_deployed(repo) else 0
-            score = (total_lines * 0.4) + (commit_count * 0.3) + (recent * 0.3)
+            print(f"📡 Processing: {repo.name}")
             
-            repos.append({
+            # Extract live demo from GitHub 'homepage' field
+            demo_url = repo.homepage if repo.homepage and repo.homepage.startswith("http") else None
+            
+            repo_entry = {
                 "name": repo.name,
-                "complexity_score": score,
+                "complexity_score": get_repo_complexity(repo),
                 "url": repo.html_url
-            })
-            seen_names.add(repo.name)
-            print(f"Processed: {repo.name}")
+            }
             
-        except RateLimitExceededException:
-            print("Rate limit hit. Sleeping...")
-            time.sleep(60)
+            # Only add demoUrl key if a valid link exists
+            if demo_url:
+                repo_entry["demoUrl"] = demo_url
+            
+            repos.append(repo_entry)
+            
+            # Rate limit safety
+            if g.get_rate_limit().core.remaining < 20:
+                print("⚠️ Approaching API limit. Sleeping for 60s...")
+                time.sleep(60)
+                
         except Exception as e:
-            print(f"Skipping {repo.name}: {e}")
+            print(f"❌ Skipping {repo.name}: {e}")
             
     return repos
 
-def export_to_json(data, path):
-    with open(path, 'w') as f:
-        json.dump(data, f, indent=2)
-
 if __name__ == "__main__":
-    repos = fetch_repositories()
-    output_path = "../frontend/public/portfolio-data.json"
-    export_to_json(repos, output_path)
-    print(f"Success! {len(repos)} repositories exported to {output_path}")
+    # Ensure directory exists relative to script location
+    data_dir = os.path.join(os.path.dirname(__file__), "../frontend/data")
+    os.makedirs(data_dir, exist_ok=True)
+    
+    output_path = os.path.join(data_dir, "portfolio-data.json")
+    
+    data = fetch_repositories()
+    
+    with open(output_path, 'w') as f:
+        json.dump(data, f, indent=2)
+        
+    print(f"\n✅ Success! {len(data)} projects mapped to {output_path}")
