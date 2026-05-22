@@ -1,28 +1,44 @@
 name: Update Portfolio Data
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs every day at midnight
-  workflow_dispatch:      # Allows you to run it manually
+    - cron: '0 0 * * *' # Runs daily at midnight
+  workflow_dispatch:      # Allows you to trigger it manually from the Actions tab
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to allow the action to push changes back
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
+
       - name: Install dependencies
         run: pip install PyGithub
-      - name: Run Fetcher
+
+      - name: Run Fetcher Script
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Use your new secret name here
+          MY_PERSONAL_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
         run: python data-engine/fetcher.py
-      - name: Commit and Push
+
+      - name: Commit and Push Changes
         run: |
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Stage the specific file
           git add frontend/data/portfolio-data.json
-          git commit -m "chore: update portfolio data" || echo "No changes to commit"
-          git push
+          
+          # Commit only if there are changes
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "chore: auto-update portfolio data [skip ci]"
+            git push
+          else
+            echo "No changes to commit."
+          fi
