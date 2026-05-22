@@ -1,0 +1,58 @@
+# Node modules
+node_modules/
+
+# Next.js build output
+.next/
+out/
+.vercel/
+dist/
+
+# Production static files
+*.next
+*.output
+
+# Node debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Yarn/PNPM lock files (optional)
+yarn.lock
+pnpm-lock.yaml
+pnpm-debug.log*
+
+# Build tools
+build/
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments (common locations)
+venv/
+env/
+.venv/
+ENV/
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Misc logs
+*.log
+*.pid
+*.seed
