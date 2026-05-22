@@ -14,6 +14,8 @@ export type NodeData = {
   tags?: string[];
   index?: number;
   complexity?: number;
+  demoUrl?: string;  // Explicitly allowing the new property
+  demo_url?: string;
 };
 export type HoveredNode = NodeData & { screenX: number; screenY: number };
 
@@ -100,11 +102,14 @@ function NodeTooltip({
           </div>
         ) : null}
 
+        {/* Smart Click Indicator */}
         <div style={{
-          fontSize: 9, color: "rgba(255,255,255,0.15)",
+          fontSize: 9, 
+          color: node.demoUrl ? "#00ffcc" : "rgba(255,255,255,0.3)",
           letterSpacing: "0.1em",
+          fontWeight: node.demoUrl ? 600 : 400
         }}>
-          ↗ click to open
+          {node.demoUrl ? "↗ LIVE DEMO AVAILABLE" : "↗ CLICK FOR DETAILS"}
         </div>
       </div>
       <style>{`
@@ -219,28 +224,62 @@ function NodeDetail({
         </div>
       ) : null}
 
-      {/* CTA */}
-      <div style={{ padding: "20px 24px", marginTop: "auto" }}>
-        <a
-          href={node.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            width: "100%", padding: "12px 0",
-            background: `linear-gradient(135deg, ${color}22, ${color}0a)`,
-            border: `1px solid ${color}40`,
-            borderRadius: 8, color: color,
-            textDecoration: "none", fontSize: 11,
-            fontFamily: "'JetBrains Mono',monospace",
-            letterSpacing: "0.18em", textTransform: "uppercase",
-            transition: "all 0.2s",
-          }}
-          onMouseEnter={e => (e.currentTarget.style.background = `linear-gradient(135deg, ${color}35, ${color}18)`)}
-          onMouseLeave={e => (e.currentTarget.style.background = `linear-gradient(135deg, ${color}22, ${color}0a)`)}
-        >
-          Open Project ↗
-        </a>
+      {/* ─── Dual CTA Buttons ─── */}
+      <div style={{ padding: "20px 24px", marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
+        
+        {/* Primary Button: Live Demo */}
+        {node.demoUrl && (
+          <a
+            href={node.demoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              width: "100%", padding: "12px 0",
+              background: `linear-gradient(135deg, ${color}22, ${color}0a)`,
+              border: `1px solid ${color}40`,
+              borderRadius: 8, color: color,
+              textDecoration: "none", fontSize: 11,
+              fontFamily: "'JetBrains Mono',monospace",
+              letterSpacing: "0.18em", textTransform: "uppercase",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = `linear-gradient(135deg, ${color}35, ${color}18)`)}
+            onMouseLeave={e => (e.currentTarget.style.background = `linear-gradient(135deg, ${color}22, ${color}0a)`)}
+          >
+            Launch Live Demo ↗
+          </a>
+        )}
+
+        {/* Secondary Button: GitHub Repo */}
+        {node.url && node.url !== "#" && (
+          <a
+            href={node.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              width: "100%", padding: "12px 0",
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 8, color: "rgba(255,255,255,0.7)",
+              textDecoration: "none", fontSize: 11,
+              fontFamily: "'JetBrains Mono',monospace",
+              letterSpacing: "0.18em", textTransform: "uppercase",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+              e.currentTarget.style.color = "#ffffff";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.03)";
+              e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+            }}
+          >
+            GitHub Repository ↗
+          </a>
+        )}
       </div>
 
       <style>{`

@@ -7,7 +7,30 @@ import {
 import type { NodeData, HoveredNode } from "./Scene";
 import portfolioData from "../data/portfolio-data.json";
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// ─── Live Demo Mapping ────────────────────────────────────────────────────────
+// This automatically pairs your raw JSON names with their deployed URLs
+const DEMO_MAP: Record<string, string> = {
+  "anime-grid": "https://anime-grid-nine.vercel.app",
+  "bitflow": "https://bit-flow-two.vercel.app",
+  "ct-patient-data-dashboard": "https://ct-patient-data-dashboard.vercel.app",
+  "frontend-resqplate-": "https://res-q-plate.vercel.app",
+  "resqplate": "https://res-q-plate.vercel.app",
+  "gta-vi": "https://gta-vi-woad.vercel.app",
+  "mediquery.ai": "https://mediquery-ai.streamlit.app",
+  "mocktail": "https://mocktail-seven.vercel.app",
+  "openshelf-e2e": "https://openshelf-e2e.streamlit.app",
+  "pagewhisper": "https://page-whisper.vercel.app",
+  "rewind": "https://rewind-pied.vercel.app",
+  "roleradar": "https://roleradarz.streamlit.app",
+  "rxscan-ai": "https://rx-scan-ai.vercel.app",
+  "salony-s-fitness-club": "https://salony-s-fitness-club.vercel.app",
+  "skillbridge-ai": "https://skill-bridge-ai-orpin.vercel.app",
+  "sonic-prep": "https://sonic-prep.vercel.app",
+  "vertexflow": "https://vertex-flow-phi.vercel.app",
+  "z-axis-cloud": "https://z-axis-cloud.vercel.app"
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 const getNormalizedData = (data: any): any[] => {
   if (Array.isArray(data)) return data;
   if (data && typeof data === "object") {
@@ -60,6 +83,7 @@ export interface SimNode extends NodeData {
   pulsePhase: number;
   trailX: number[]; trailY: number[];
   complexity: number;
+  demoUrl?: string; // Newly added property
 }
 
 export interface Edge { a: number; b: number }
@@ -70,7 +94,7 @@ const SPRING_LEN = 100;
 const SPRING_K   = 0.016;
 const DAMP       = 0.86;
 const CENTER_K   = 0.003;
-const ATTRACT_K  = 0.0008; // selected node pulls neighbours
+const ATTRACT_K  = 0.0008;
 
 function tickSimulation(nodes: SimNode[], edges: Edge[], selectedIdx: number) {
   const n = nodes.length;
@@ -95,7 +119,6 @@ function tickSimulation(nodes: SimNode[], edges: Edge[], selectedIdx: number) {
     a.vx += (f*dx)/dist; a.vy += (f*dy)/dist; a.vz += (f*dz)/dist;
     b.vx -= (f*dx)/dist; b.vy -= (f*dy)/dist; b.vz -= (f*dz)/dist;
   }
-  // Neighbour attraction toward selected
   if (selectedIdx >= 0) {
     const sel = nodes[selectedIdx];
     for (const e of edges) {
@@ -142,7 +165,6 @@ const bgParticles = Array.from({ length: BG_COUNT }, () => ({
   hue:     Math.random() > 0.5 ? "#00f5c4" : "#a78bfa",
 }));
 
-// ─── Nebula cloud (static decorative blobs) ───────────────────────────────────
 const NEBULAE = Array.from({ length: 5 }, (_, i) => ({
   x: 0.1 + i * 0.22, y: 0.2 + (i % 2) * 0.55,
   r: 120 + Math.random() * 140,
@@ -212,9 +234,13 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
       const theta = Math.random() * Math.PI * 2;
       const phi   = Math.acos(2 * Math.random() - 1);
       const r     = 90 + Math.random() * 70;
+      
+      const safeName = (d.name ?? `Project ${i}`).toLowerCase();
+      
       return {
         name:        d.name ?? `Project ${i}`,
         url:         d.url  ?? "#",
+        demoUrl:     DEMO_MAP[safeName] || d.demo_url, // Maps live links
         category:    cat,
         description: `Complexity score: ${Math.round(d.complexity_score ?? 0).toLocaleString()}`,
         tags:        d.tags ?? ["AI", "Development"],
@@ -225,11 +251,11 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         z: r * Math.cos(phi),
         vx: 0, vy: 0, vz: 0,
         sx: 0, sy: 0, projScale: 1, projDepth: 0,
-        radius:     cfg.radius,
-        hovered:    false, selected: false, filtered: true,
+        radius:      cfg.radius,
+        hovered:     false, selected: false, filtered: true,
         hoverScale: 1,
         pulsePhase: Math.random() * Math.PI * 2,
-        trailX:     [], trailY: [],
+        trailX:      [], trailY: [],
       };
     });
 
@@ -247,14 +273,12 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
     onNodeCount(nodes.length);
   }, [onNodeCount]);
 
-  // Apply filter
   useEffect(() => {
     nodesRef.current.forEach(nd => {
       nd.filtered = filterCat === null || nd.category === filterCat;
     });
   }, [filterCat]);
 
-  // Apply search highlight
   useEffect(() => {
     if (searchIdx !== null) {
       const nd = nodesRef.current[searchIdx];
@@ -296,7 +320,6 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
 
       for (const nd of nodes) {
         const p = project(nd.x, nd.y, nd.z, camera, W, H);
-        // Trail
         nd.trailX.unshift(nd.sx); nd.trailY.unshift(nd.sy);
         if (nd.trailX.length > 8) { nd.trailX.pop(); nd.trailY.pop(); }
         nd.sx = p.sx; nd.sy = p.sy; nd.projScale = p.scale; nd.projDepth = p.depth;
@@ -308,19 +331,14 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
 
       // ── Nebula atmosphere ─────────────────────────────────────────────────
       for (const nb of NEBULAE) {
-        // Hex to rgb helper inline
         const hex = nb.color.slice(1);
         const r = parseInt(hex.slice(0,2),16);
         const g = parseInt(hex.slice(2,4),16);
         const b = parseInt(hex.slice(4,6),16);
-        
         const grd = ctx.createRadialGradient(nb.x*W, nb.y*H, 0, nb.x*W, nb.y*H, nb.r);
-        
-        // Math.min safely clamps alpha values so they never exceed 1
         grd.addColorStop(0,   `rgba(${r},${g},${b},${Math.min(1, nb.opacity*1.5)})`);
         grd.addColorStop(0.5, `rgba(${r},${g},${b},${Math.min(1, nb.opacity)})`);
         grd.addColorStop(1,   `rgba(${r},${g},${b},0)`);
-        
         ctx.fillStyle = grd;
         ctx.beginPath();
         ctx.arc(nb.x*W, nb.y*H, nb.r, 0, Math.PI*2);
@@ -334,7 +352,6 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         if (p.y < 0) p.y = 1; if (p.y > 1) p.y = 0;
       }
       ctx.save();
-      // Particle connections
       for (let i = 0; i < bgParticles.length; i++) {
         const pi = bgParticles[i];
         for (let j = i + 1; j < bgParticles.length; j++) {
@@ -365,9 +382,7 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
       const visNodes = nodes.filter(n => n.filtered);
       const visSet   = new Set(visNodes.map(n => n.index ?? 0));
       const visEdges = edges.filter(e => visSet.has(e.a) && visSet.has(e.b));
-
-      const sortedEdges = [...visEdges].sort(
-        (e1, e2) =>
+      const sortedEdges = [...visEdges].sort((e1, e2) =>
           (nodes[e1.a].projScale + nodes[e1.b].projScale) -
           (nodes[e2.a].projScale + nodes[e2.b].projScale)
       );
@@ -392,9 +407,7 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
           ctx.lineWidth   = 1.4;
         } else {
           ctx.globalAlpha = opacity;
-          ctx.strokeStyle = isHl
-            ? getCat(na.hovered ? na.category : nb.category).color
-            : "#00f5c4";
+          ctx.strokeStyle = isHl ? getCat(na.hovered ? na.category : nb.category).color : "#00f5c4";
           ctx.lineWidth   = isHl ? 1.1 : 0.5;
         }
         ctx.beginPath();
@@ -462,6 +475,22 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         ctx.arc(sx, sy, r * 4.2, 0, Math.PI*2);
         ctx.fill();
 
+        // 🌟 NEW FEATURE: Rotating Orbit for LIVE DEMO Nodes
+        if (nd.demoUrl) {
+          const demoPulse = (now * 0.0015 + nd.pulsePhase) % (Math.PI * 2);
+          ctx.save();
+          ctx.translate(sx, sy);
+          ctx.rotate(demoPulse);
+          ctx.globalAlpha = dimAlpha * 0.9;
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([8, 6, 2, 6]); // High-tech dashed pattern
+          ctx.beginPath();
+          ctx.arc(0, 0, r * 2.4, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
         // Animated pulse ring
         const pulse = (now * 0.001 + nd.pulsePhase) % (Math.PI * 2);
         const ringR = r * (2.1 + Math.sin(pulse * 0.9) * 0.28);
@@ -504,21 +533,25 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         ctx.arc(sx, sy, r, 0, Math.PI*2);
         ctx.fill();
 
-        // Label pill
+        // 🌟 UPGRADED: Label pill with "LIVE" badge support
         ctx.globalAlpha = Math.min(1, dimAlpha * (nd.projScale > 0.65 ? 1.2 : 0.4));
         const fontSize  = Math.max(9, Math.round(11.5 * nd.projScale * nd.hoverScale));
         ctx.font        = `500 ${fontSize}px 'JetBrains Mono','Fira Code',monospace`;
         ctx.textAlign   = "center";
         ctx.textBaseline = "middle";
-        const tw   = ctx.measureText(nd.name).width;
+        
+        let labelText = nd.name;
+        if (nd.demoUrl) labelText += " ↗ LIVE"; // Inject visual tag
+
+        const tw   = ctx.measureText(labelText).width;
         const px   = 8, py = 4;
         const pw   = tw + px*2, ph = fontSize + py*2;
         const plx  = sx - pw/2, ply = sy - r - ph - 8;
 
         // Pill background
         ctx.fillStyle   = "rgba(4,4,22,0.86)";
-        ctx.strokeStyle = cfg.color + "55";
-        ctx.lineWidth   = 0.8;
+        ctx.strokeStyle = nd.demoUrl ? "#ffffff" : cfg.color + "55"; // Brighten border if Live
+        ctx.lineWidth   = nd.demoUrl ? 1.2 : 0.8;
         ctx.beginPath();
         ctx.roundRect(plx, ply, pw, ph, ph/2);
         ctx.fill();
@@ -531,10 +564,10 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         ctx.fill();
 
         // Label text
-        ctx.fillStyle   = "#f0f0f8";
+        ctx.fillStyle   = nd.demoUrl ? "#00ffcc" : "#f0f0f8"; // Cyan text for live demos
         ctx.shadowColor = "rgba(0,0,0,0.95)";
         ctx.shadowBlur  = 5;
-        ctx.fillText(nd.name, sx + 1, ply + ph/2);
+        ctx.fillText(labelText, sx + 1, ply + ph/2);
         ctx.shadowBlur  = 0;
 
         ctx.restore();
