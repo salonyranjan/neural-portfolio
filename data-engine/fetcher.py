@@ -4,10 +4,10 @@ from datetime import datetime, timedelta, timezone
 import json
 import time
 
-# 1. Setup GitHub Auth
-token = os.getenv('GITHUB_TOKEN')
+# 1. Setup GitHub Auth - Must match the secret name in GitHub Actions
+token = os.getenv('MY_PERSONAL_TOKEN')
 if not token:
-    raise ValueError("GITHUB_TOKEN environment variable is not set!")
+    raise ValueError("MY_PERSONAL_TOKEN environment variable is not set!")
 
 g = Github(token)
 user = g.get_user()
@@ -18,8 +18,9 @@ AVG_LINE_LENGTH = 50
 
 def get_repo_complexity(repo):
     """Calculates a normalized score based on size and activity."""
-    # repo.size is in KB
-    total_lines_estimate = (repo.size * 1024) // AVG_LINE_LENGTH
+    # Use max() to ensure size is at least 1, preventing weird math
+    size_kb = max(repo.size, 1) 
+    total_lines_estimate = (size_kb * 1024) // AVG_LINE_LENGTH
     
     # Calculate recency bonus
     try:
@@ -63,7 +64,7 @@ def fetch_repositories():
             
             repos.append(repo_entry)
             
-            # Rate limit safety
+            # Rate limit safety: Sleep if we have fewer than 20 calls remaining
             if g.get_rate_limit().core.remaining < 20:
                 print("⚠️ Approaching API limit. Sleeping for 60s...")
                 time.sleep(60)
@@ -75,6 +76,7 @@ def fetch_repositories():
 
 if __name__ == "__main__":
     # Ensure directory exists relative to script location
+    # This assumes the script is in /data-engine and output is in /frontend/data
     data_dir = os.path.join(os.path.dirname(__file__), "../frontend/data")
     os.makedirs(data_dir, exist_ok=True)
     
