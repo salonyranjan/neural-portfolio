@@ -1,135 +1,206 @@
 [
   {
-    "name": "anime-grid",
-    "complexity_score": 283552.6,
-    "url": "https://github.com/salonyranjan/anime-grid",
-    "demo_url": "https://anime-grid-nine.vercel.app"
-  },
-  {
-    "name": "BitFlow",
-    "complexity_score": 30226.0,
-    "url": "https://github.com/salonyranjan/BitFlow",
-    "demo_url": "https://bit-flow-two.vercel.app"
-  },
-  {
-    "name": "CineNative",
-    "complexity_score": 21319.1,
-    "url": "https://github.com/salonyranjan/CineNative"
-  },
-  {
-    "name": "ct-patient-data-dashboard",
-    "complexity_score": 277785.7,
-    "url": "https://github.com/salonyranjan/ct-patient-data-dashboard",
-    "demo_url": "https://ct-patient-data-dashboard.vercel.app"
-  },
-  {
-    "name": "frontend-ResQplate-",
-    "complexity_score": 116924.5,
-    "url": "https://github.com/salonyranjan/frontend-ResQplate-",
-    "demo_url": "https://res-q-plate.vercel.app"
-  },
-  {
-    "name": "GTA-VI",
-    "complexity_score": 226218.7,
-    "url": "https://github.com/salonyranjan/GTA-VI",
-    "demo_url": "https://gta-vi-woad.vercel.app"
-  },
-  {
-    "name": "MediQuery.ai",
-    "complexity_score": 128056.3,
-    "url": "https://github.com/salonyranjan/MediQuery.ai",
-    "demo_url": "https://mediquery-ai.streamlit.app/"
-  },
-  {
-    "name": "Mocktail",
-    "complexity_score": 289602.7,
-    "url": "https://github.com/salonyranjan/Mocktail",
-    "demo_url": "https://mocktail-seven.vercel.app"
-  },
-  {
-    "name": "OpenShelf-E2E",
-    "complexity_score": 193883.0,
-    "url": "https://github.com/salonyranjan/OpenShelf-E2E",
-    "demo_url": "https://openshelf-e2e.streamlit.app/"
-  },
-  {
-    "name": "PageWhisper",
-    "complexity_score": 76032.9,
-    "url": "https://github.com/salonyranjan/PageWhisper",
-    "demo_url": "https://page-whisper.vercel.app"
-  },
-  {
-    "name": "ResQPlate",
-    "complexity_score": 5088.7,
-    "url": "https://github.com/salonyranjan/ResQPlate",
-    "demo_url": "https://res-q-plate.vercel.app"
-  },
-  {
-    "name": "Retail-Customer-Insights-Dashboard--SQL---Python---Power-BI-",
-    "complexity_score": 2385.4,
-    "url": "https://github.com/salonyranjan/Retail-Customer-Insights-Dashboard--SQL---Python---Power-BI-"
-  },
-  {
-    "name": "Rewind",
-    "complexity_score": 155640.9,
-    "url": "https://github.com/salonyranjan/Rewind",
-    "demo_url": "https://rewind-pied.vercel.app"
-  },
-  {
-    "name": "RoleRadar",
-    "complexity_score": 879.7,
-    "url": "https://github.com/salonyranjan/RoleRadar",
-    "demo_url": "https://roleradarz.streamlit.app/"
-  },
-  {
-    "name": "RxScan-AI",
-    "complexity_score": 17411.1,
-    "url": "https://github.com/salonyranjan/RxScan-AI",
-    "demo_url": "https://rx-scan-ai.vercel.app"
-  },
-  {
-    "name": "Salony-s-Fitness-Club",
-    "complexity_score": 136552.4,
-    "url": "https://github.com/salonyranjan/Salony-s-Fitness-Club",
-    "demo_url": "https://salony-s-fitness-club.vercel.app"
-  },
-  {
     "name": "salonyranjan",
-    "complexity_score": 69138.2,
+    "complexity_score": 112951.15,
     "url": "https://github.com/salonyranjan/salonyranjan"
   },
   {
-    "name": "salonyranjan.github.io",
-    "complexity_score": 67.0,
-    "url": "https://github.com/salonyranjan/salonyranjan.github.io"
+    "name": "neural-portfolio",
+    "complexity_score": 3872.7,
+    "url": "https://github.com/salonyranjan/neural-portfolio",
+    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
-    "name": "SkillBridge-AI",
-    "complexity_score": 23903.8,
-    "url": "https://github.com/salonyranjan/SkillBridge-AI",
-    "demo_url": "https://skill-bridge-ai-orpin.vercel.app"
+    "name": "ResQPlate",
+    "complexity_score": 9304.75,
+    "url": "https://github.com/manish01101/ResQPlate",
+    "demoUrl": "https://resqplate-tan.vercel.app"
   },
   {
-    "name": "sonic-prep",
-    "complexity_score": 129381.1,
-    "url": "https://github.com/salonyranjan/sonic-prep",
-    "demo_url": "https://sonic-prep.vercel.app"
+    "name": "neural-map",
+    "complexity_score": 372.45,
+    "url": "https://github.com/salonyranjan/neural-map",
+    "demoUrl": "https://salonyranjan.github.io/neural-map/"
+  },
+  {
+    "name": "RxScan-AI",
+    "complexity_score": 28287.35,
+    "url": "https://github.com/salonyranjan/RxScan-AI",
+    "demoUrl": "https://rx-scan-ai.vercel.app"
+  },
+  {
+    "name": "GTA-VI",
+    "complexity_score": 367623.1,
+    "url": "https://github.com/salonyranjan/GTA-VI",
+    "demoUrl": "https://gta-vi-woad.vercel.app"
+  },
+  {
+    "name": "Mocktail",
+    "complexity_score": 470618.2,
+    "url": "https://github.com/salonyranjan/Mocktail",
+    "demoUrl": "https://mocktail-seven.vercel.app"
+  },
+  {
+    "name": "anime-grid",
+    "complexity_score": 460780.45,
+    "url": "https://github.com/salonyranjan/anime-grid",
+    "demoUrl": "https://anime-grid-nine.vercel.app"
   },
   {
     "name": "VertexFlow",
-    "complexity_score": 348743.7,
+    "complexity_score": 566743.45,
     "url": "https://github.com/salonyranjan/VertexFlow",
-    "demo_url": "https://vertex-flow-phi.vercel.app"
+    "demoUrl": "https://vertex-flow-phi.vercel.app"
+  },
+  {
+    "name": "frontend-ResQplate-",
+    "complexity_score": 189987.85,
+    "url": "https://github.com/salonyranjan/frontend-ResQplate-",
+    "demoUrl": "https://res-q-plate.vercel.app"
+  },
+  {
+    "name": "Rewind",
+    "complexity_score": 194559.5,
+    "url": "https://github.com/salonyranjan/Rewind",
+    "demoUrl": "https://rewind-pied.vercel.app"
+  },
+  {
+    "name": "salonyranjan.github.io",
+    "complexity_score": 81.5,
+    "url": "https://github.com/salonyranjan/salonyranjan.github.io",
+    "demoUrl": "https://vertex-flow-phi.vercel.app/"
+  },
+  {
+    "name": "MediQuery.ai",
+    "complexity_score": 160081.0,
+    "url": "https://github.com/salonyranjan/MediQuery.ai",
+    "demoUrl": "https://mediquery-ai.streamlit.app/"
+  },
+  {
+    "name": "OpenShelf-E2E",
+    "complexity_score": 242370.0,
+    "url": "https://github.com/salonyranjan/OpenShelf-E2E",
+    "demoUrl": "https://openshelf-e2e.streamlit.app/"
+  },
+  {
+    "name": "CuraMind-AI",
+    "complexity_score": 111431.5,
+    "url": "https://github.com/salonyranjan/CuraMind-AI"
+  },
+  {
+    "name": "BitFlow",
+    "complexity_score": 37795.0,
+    "url": "https://github.com/salonyranjan/BitFlow",
+    "demoUrl": "https://bit-flow-two.vercel.app"
+  },
+  {
+    "name": "Salony-s-Fitness-Club",
+    "complexity_score": 170700.0,
+    "url": "https://github.com/salonyranjan/Salony-s-Fitness-Club",
+    "demoUrl": "https://salony-s-fitness-club.vercel.app"
+  },
+  {
+    "name": "PageWhisper",
+    "complexity_score": 95057.0,
+    "url": "https://github.com/salonyranjan/PageWhisper",
+    "demoUrl": "https://page-whisper.vercel.app"
+  },
+  {
+    "name": "LiveSport-Dash",
+    "complexity_score": 573.0,
+    "url": "https://github.com/salonyranjan/LiveSport-Dash"
+  },
+  {
+    "name": "CineNative",
+    "complexity_score": 26664.0,
+    "url": "https://github.com/salonyranjan/CineNative",
+    "demoUrl": "https://expo.dev/accounts/salonyy/projects/CineNative/builds/1f85f246-febf-4e37-89b3-51328a6fe666"
+  },
+  {
+    "name": "Ultimate-TCS-NQT-Resources",
+    "complexity_score": 873031.5,
+    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
+  },
+  {
+    "name": "sonic-prep",
+    "complexity_score": 161740.0,
+    "url": "https://github.com/salonyranjan/sonic-prep",
+    "demoUrl": "https://sonic-prep.vercel.app"
   },
   {
     "name": "Z-Axis-Cloud",
-    "complexity_score": 475.4,
+    "complexity_score": 613.5,
     "url": "https://github.com/salonyranjan/Z-Axis-Cloud",
-    "demo_url": "https://z-axis-cloud.vercel.app"
+    "demoUrl": "https://z-axis-cloud.vercel.app"
+  },
+  {
+    "name": "AuraHealth",
+    "complexity_score": 2181.0,
+    "url": "https://github.com/salonyranjan/AuraHealth"
+  },
+  {
+    "name": "ct-patient-data-dashboard",
+    "complexity_score": 347228.0,
+    "url": "https://github.com/salonyranjan/ct-patient-data-dashboard",
+    "demoUrl": "https://ct-patient-data-dashboard.vercel.app"
+  },
+  {
+    "name": "SkillBridge-AI",
+    "complexity_score": 29890.0,
+    "url": "https://github.com/salonyranjan/SkillBridge-AI",
+    "demoUrl": "https://skill-bridge-ai-orpin.vercel.app"
+  },
+  {
+    "name": "AI_RecruitVoice",
+    "complexity_score": 11632.5,
+    "url": "https://github.com/salonyranjan/AI_RecruitVoice"
+  },
+  {
+    "name": "QuickCart",
+    "complexity_score": 76595.0,
+    "url": "https://github.com/salonyranjan/QuickCart",
+    "demoUrl": "https://quick-cart-blush-alpha.vercel.app"
+  },
+  {
+    "name": "RoleRadar",
+    "complexity_score": 1115.5,
+    "url": "https://github.com/salonyranjan/RoleRadar",
+    "demoUrl": "https://roleradarz.streamlit.app/"
   },
   {
     "name": "ZenithRAG",
-    "complexity_score": 314768.7,
-    "url": "https://github.com/salonyranjan/ZenithRAG"
+    "complexity_score": 393471.5,
+    "url": "https://github.com/salonyranjan/ZenithRAG",
+    "demoUrl": "http://13.60.233.173:8080"
+  },
+  {
+    "name": "Retail-Customer-Insights-Dashboard--SQL---Python---Power-BI-",
+    "complexity_score": 2979.5,
+    "url": "https://github.com/salonyranjan/Retail-Customer-Insights-Dashboard--SQL---Python---Power-BI-"
+  },
+  {
+    "name": "An-AI-powered-Career-Coach-Assistance-Application",
+    "complexity_score": 328437.5,
+    "url": "https://github.com/salonyranjan/An-AI-powered-Career-Coach-Assistance-Application"
+  },
+  {
+    "name": "QuickServeAPI",
+    "complexity_score": 174.0,
+    "url": "https://github.com/salonyranjan/QuickServeAPI"
+  },
+  {
+    "name": "apexhire_ai",
+    "complexity_score": 39905.0,
+    "url": "https://github.com/salonyranjan/apexhire_ai"
+  },
+  {
+    "name": "JSON-web-tokens-JWT--Authentication",
+    "complexity_score": 10936.0,
+    "url": "https://github.com/salonyranjan/JSON-web-tokens-JWT--Authentication"
+  },
+  {
+    "name": "MLPROJECT",
+    "complexity_score": 40.5,
+    "url": "https://github.com/salonyranjan/MLPROJECT"
   }
 ]
