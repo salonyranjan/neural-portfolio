@@ -119,7 +119,7 @@ Neural Portfolio is a cinematic, spatial experience — built to communicate eng
 ### 🌌 The Knowledge Graph — *Full 3D View*
 
 <div align="center">
-  <img src="./assets/demo.gif" width="400" alt="Neural Portfolio — 3D Knowledge Graph"/>
+  <img src="./assets/demo.gif" width="100%" alt="Neural Portfolio — 3D Knowledge Graph"/>
   <p><i>Live force-directed graph — orbit, pan, and zoom through nodes with custom physics.</i></p>
 </div>
 
@@ -130,7 +130,7 @@ Neural Portfolio is a cinematic, spatial experience — built to communicate eng
 ### 🔍 Global Search — *⌘K Node Finder*
 
 <div align="center">
-  <img src="./assets/search.png" width="400" alt="Neural Portfolio — Global Search"/>
+  <img src="./assets/search.png" width="100%" alt="Neural Portfolio — Global Search"/>
   <p><i>⌘K launches the global search — find any node by name, tech, or category instantly.</i></p>
 </div>
 
