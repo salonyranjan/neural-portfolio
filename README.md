@@ -15,7 +15,7 @@
 
 <br/><br/>
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&weight=900&size=21&pause=1000&color=6366f1&center=true&vCenter=true&width=980&height=55&lines=🌌+3D+Force-Directed+Knowledge+Graph+%7C+60+FPS+rAF+Loop;🔗+Live+GitHub+Sync+%7C+Smart+Deployment+Detection;🔍+Global+Search+⌘K+%7C+Complexity-Weighted+Node+Scaling;🧠+AI+Insights+%7C+Pinecone+Vector+%7C+FastAPI+Backend" alt="Typing SVG" />
+<img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&weight=900&size=21&pause=1000&color=6366f1&center=true&vCenter=true&width=980&height=55&lines=🌌+3D+Force-Directed+Knowledge+Graph+%7C+60+FPS+rAF+Loop;🔗+Live+GitHub+Sync+%7C+Smart+Deployment+Detection;🔍+Global+Search+⌘K+%7C+Complexity-Weighted+Node+Scaling;🐍+FastAPI+Backend+%7C+AWS+S3+%2B+EC2+%7C+GitHub+Actions" alt="Typing SVG" />
 
 <br/><br/>
 
@@ -37,7 +37,6 @@
 <br/>
 
 <img src="https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-<img src="https://img.shields.io/badge/Pinecone-Vector_DB-06b6d4?style=for-the-badge" />
 <img src="https://img.shields.io/badge/GitHub_API-Live_Sync-181717?style=for-the-badge&logo=github&logoColor=white" />
 <img src="https://img.shields.io/badge/AWS-S3+EC2-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" />
 <img src="https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" />
@@ -120,6 +119,10 @@ Neural Portfolio is a cinematic, spatial experience — built to communicate eng
 
 <div align="center">
   <img src="./assets/demo.gif" width="100%" alt="Neural Portfolio — 3D Knowledge Graph"/>
+   <img src="./assets/1.png" width="100%" alt="Neural Portfolio — 3D Knowledge Graph"/>
+   <img src="./assets/2.png" width="100%" alt="Neural Portfolio — 3D Knowledge Graph"/>
+   <img src="./assets/3.png" width="100%" alt="Neural Portfolio — 3D Knowledge Graph"/>
+   <img src="./assets/4.png" width="100%" alt="Neural Portfolio — 3D Knowledge Graph"/>
   <p><i>Live force-directed graph — orbit, pan, and zoom through nodes with custom physics.</i></p>
 </div>
 
@@ -141,24 +144,11 @@ Neural Portfolio is a cinematic, spatial experience — built to communicate eng
 ### 📊 Contextual Sidebar — *Project Drill-Down*
 
 <div align="center">
-  <img src="./assets/sidebar.png" width="300" alt="Neural Portfolio — Project Sidebar"/>
+  <img src="./assets/sidebar.png" width="350" alt="Neural Portfolio — Project Sidebar"/>
   <p><i>Click any node to open the contextual sidebar — tech stack, complexity score, live demo links.</i></p>
 </div>
 
 > 🔗 **Smart Deployment Detection** — automatically surfaces Vercel and Streamlit live demo links before source-code links · Tech stack chips · Stars, forks, and last commit synced from GitHub API
-
----
-
-### 🧠 AI Insights Panel — *Hover Intelligence*
-
-<div align="center">
-  <img src="./assets/1.png" width="500" alt="Neural Portfolio — AI Insights"/>
-   <img src="./assets/2.png" width="500" alt="Neural Portfolio — AI Insights"/>
-   <img src="./assets/3.png" width="500" alt="Neural Portfolio — AI Insights"/>
-   <img src="./assets/4.png" width="500" alt="Neural Portfolio — AI Insights"/>
-</div>
-
-> 🤖 **Pinecone vector search** retrieves semantically similar projects · FastAPI backend pre-generates embeddings via Python · Hover delay of 400ms prevents summary flicker during graph navigation
 
 ---
 
@@ -171,7 +161,6 @@ Neural Portfolio is a cinematic, spatial experience — built to communicate eng
 | 🌌 3D Graph | ✅ touch | ✅ touch + mouse | ✅ full orbit |
 | 🔍 ⌘K Search | ✅ | ✅ | ✅ |
 | 📊 Sidebar | ✅ bottom sheet | ✅ side panel | ✅ side panel |
-| 🧠 AI Insights | ✅ tap | ✅ tap + hover | ✅ hover |
 
 </div>
 
@@ -185,7 +174,6 @@ Neural Portfolio is a cinematic, spatial experience — built to communicate eng
 |:---|:---:|:---|
 | 🎯 **Render FPS** | `60 FPS` | `requestAnimationFrame` physics + Three.js GPU compositing |
 | 🔗 **Data Source** | GitHub API | Live sync — repos, stars, languages, deployments |
-| 🧠 **AI Layer** | Pinecone + FastAPI | Vector embeddings for semantic project summaries |
 | 🔍 **Search** | `⌘K` Global | Instant node find by name, tech, or category |
 | 🌐 **Deployment Detection** | Smart Router | Vercel/Streamlit URLs prioritised over source links |
 | ⚡ **Edge Filtering** | Distance-based | Prevents spaghetti states at any graph density |
@@ -204,7 +192,6 @@ Neural Portfolio is a cinematic, spatial experience — built to communicate eng
   <tr><td>🎨</td><td><strong>Distance-Based Edge Fading</strong></td><td>Graph edges fade as nodes move apart — eliminates spaghetti states at high zoom and keeps the graph readable at any density</td></tr>
   <tr><td>🔍</td><td><strong>Global Search ⌘K</strong></td><td>Command-palette style search — type any node name, technology, or category and the camera smoothly flies to the matching node</td></tr>
   <tr><td>📋</td><td><strong>Contextual Sidebar</strong></td><td>Click any node to open a detailed sidebar — tech stack chips, complexity score, live demo link, GitHub stats, and AI-generated summary</td></tr>
-  <tr><td>🧠</td><td><strong>Pinecone AI Insights</strong></td><td>Hover any node to surface semantically similar projects and an AI-generated description via Pinecone vector search + FastAPI</td></tr>
   <tr><td>⚡</td><td><strong>Zero-State Optimised</strong></td><td>Intelligent edge-filtering prevents visual overload — the graph remains interpretable whether it has 5 nodes or 50</td></tr>
   <tr><td>📱</td><td><strong>Touch & Mobile Ready</strong></td><td>Pinch-to-zoom, swipe-to-orbit, and tap-to-select work on all touch devices — physics scales to mobile GPU budgets automatically</td></tr>
 </table>
@@ -224,9 +211,8 @@ graph TD
 
     subgraph Backend ["🐍 Python Data Engine — FastAPI on EC2"]
         SCRAPER[🔍 GitHub Scraper<br/>Repo Metadata Fetcher]
-        EMBED[🧠 Embedding Generator<br/>Pinecone Upsert]
+        EMBED[🧠 Embedding Generator<br/>Text Processing]
         API[⚡ FastAPI Server<br/>REST Endpoints]
-        PINE[🔷 Pinecone<br/>Vector DB]
     end
 
     subgraph Storage ["☁️ AWS S3"]
@@ -239,7 +225,6 @@ graph TD
         CANVAS[🖥️ Three.js WebGL Canvas]
         SEARCH[🔍 ⌘K Global Search]
         SIDEBAR[📊 Contextual Sidebar]
-        AI_PANEL[🧠 AI Insights Panel]
     end
 
     GH_ACT -->|scheduled trigger| SCRAPER
@@ -247,18 +232,11 @@ graph TD
     GH_API -->|repo metadata| SCRAPER
     SCRAPER -->|graph.json| JSON
     SCRAPER -->|text chunks| EMBED
-    EMBED -->|upsert vectors| PINE
 
     JSON -->|fetch on load| APP
     APP --> R3F --> CANVAS
     APP --> SEARCH
     APP --> SIDEBAR
-    APP --> AI_PANEL
-
-    AI_PANEL -->|semantic query| API
-    API -->|ANN search| PINE
-    PINE -->|similar projects| API
-    API -->|summaries| AI_PANEL
 
     classDef github fill:#0a0a0a,stroke:#181717,stroke-width:2px,color:#fff;
     classDef backend fill:#0a1a0a,stroke:#009688,stroke-width:2px,color:#fff;
@@ -266,9 +244,9 @@ graph TD
     classDef frontend fill:#0a001a,stroke:#6366f1,stroke-width:2px,color:#fff;
 
     class GH_API,GH_ACT github;
-    class SCRAPER,EMBED,API,PINE backend;
+    class SCRAPER,EMBED,API backend;
     class JSON storage;
-    class APP,R3F,CANVAS,SEARCH,SIDEBAR,AI_PANEL frontend;
+    class APP,R3F,CANVAS,SEARCH,SIDEBAR frontend;
 ```
 
 ### 5.2 🔄 Data Flow — GitHub → Graph
@@ -303,8 +281,6 @@ sequenceDiagram
     participant FE as 🌐 Next.js App
     participant S3 as ☁️ AWS S3
     participant R3F as 🌌 React Three Fiber
-    participant API as ⚡ FastAPI
-    participant PC as 🔷 Pinecone
 
     Note over U,FE: 🚀 Initial Load
     U->>FE: Navigate to neural-portfolio.vercel.app
@@ -317,14 +293,6 @@ sequenceDiagram
     U->>FE: Press ⌘K → type "RAG"
     FE->>R3F: Filter nodes matching query
     R3F-->>U: Camera flies to matching node
-
-    Note over U,API: 🧠 AI Insights on Hover
-    U->>R3F: Hover node (400ms delay)
-    R3F->>API: GET /insights?repo=ZenithRAG
-    API->>PC: ANN similarity search
-    PC-->>API: Top-3 similar projects + summary
-    API-->>FE: AI insights payload
-    FE-->>U: Insight panel fades in ✅
 
     Note over U,R3F: 📊 Node Click → Sidebar
     U->>R3F: Click node
@@ -360,13 +328,11 @@ sequenceDiagram
 <p>
   <img src="https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white" />
   <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
-  <img src="https://img.shields.io/badge/Pinecone-Vector_DB-06b6d4?style=for-the-badge" />
   <img src="https://img.shields.io/badge/GitHub_REST_API-181717?style=for-the-badge&logo=github&logoColor=white" />
 </p>
 
-- **FastAPI** — Lightweight, async REST API serving AI insights with sub-100ms response
+- **FastAPI** — Lightweight, async REST API for serving supplementary data endpoints
 - **Python GitHub Scraper** — Fetches repo metadata, detects Vercel/Streamlit deployments, scores complexity
-- **Pinecone** — Vector database storing repository embeddings for semantic similarity search
 - **Complexity Scorer** — Combines lines of code, tech diversity, and star count into a normalised 0–10 score
 
 ### 6.3 ☁️ Cloud & DevOps
@@ -413,29 +379,51 @@ A recruiter looking at a flat list can't see that my RAG pipelines, vector datab
 ├── 🌐 frontend/                         # Next.js 14 App
 │   ├── 📄 app/
 │   │   ├── 🏠 page.tsx                  # Root — mounts the 3D canvas
-│   │   ├── 📜 layout.tsx                # Global layout + SEO metadata
-│   │   └── 🎨 globals.css               # Global styles & neon themes
+│   │   └── 📜 layout.tsx                # Global layout + providers
 │   │
 │   ├── 🧩 components/
 │   │   ├── 🌌 graph/
-│   │   │   ├── Graph.tsx                # Scene root + rAF simulation
-│   │   │   └── Scene.tsx                # 3D canvas setup & hooks
-│   │   └── 📊 sidebar/                  # Project drill-down components
+│   │   │   ├── GraphCanvas.tsx          # R3F scene root + rAF loop
+│   │   │   ├── NodeMesh.tsx             # Individual node — size + colour
+│   │   │   ├── EdgeLine.tsx             # Distance-faded edge renderer
+│   │   │   └── useForceSimulation.ts    # Custom physics hook
+│   │   ├── 📊 sidebar/
+│   │   │   ├── ProjectSidebar.tsx       # Node detail panel
+│   │   │   └── TechChip.tsx             # Stack badge component
+│   │   ├── 🔍 search/
+│   │   │   └── CommandSearch.tsx        # ⌘K global search palette
+│   │   └── 🧠 insights/
+│   │       └── AIInsightsPanel.tsx      # Hover AI summary panel
 │   │
-│   └── 💾 data/
-│       └── 📄 portfolio-data.json       # Auto-synced GitHub metadata
+│   ├── 🪝 hooks/
+│   │   ├── useGraphData.ts              # fetch graph.json from S3
+│   │   ├── useNodeSelection.ts          # click state + camera fly-to
+│   │   └── useAIInsights.ts             # FastAPI insights fetcher
+│   │
+│   └── 📦 package.json
 │
-├── 🐍 data-engine/                      # Python Data Pipeline
-│   ├── 📜 fetcher.py                    # GitHub API scraper
-│   └── 📦 requirements.txt              # PyGithub & data dependencies
+├── 🐍 backend/                          # Python FastAPI Data Engine
+│   ├── ⚡ main.py                        # FastAPI app entry
+│   ├── 🔍 scraper/
+│   │   ├── github_scraper.py            # GitHub REST API client
+│   │   ├── deployment_detector.py       # Vercel/Streamlit URL finder
+│   │   └── complexity_scorer.py         # Project complexity 0–10 scorer
+│   ├── 🧠 embeddings/
+│   │   ├── embedder.py                  # Text → vector pipeline
+│   │   └── pinecone_client.py           # Pinecone upsert + query
+│   ├── 📄 graph_builder.py              # Nodes + edges → graph.json
+│   └── 📦 requirements.txt
 │
 ├── ⚙️ .github/workflows/
-│   └── update-data.yml                  # Nightly GitHub Action
+│   └── scraper.yml                      # Nightly GitHub Actions scraper
 │
-├── 📄 assets/                           # Media & Documentation
-│   └── 🎬 demo.gif                      # Project showcase loop
+├── 📄 assets/
+│   ├── 🎬 demo.gif                      # README demo animation
+│   ├── 🔍 search.png                    # ⌘K search screenshot
+│   ├── 📊 sidebar.png                   # Sidebar screenshot
+│   └── 🧠 ai-insights.png              # AI insights screenshot
 │
-└── 📄 README.md                         # Project landing page
+└── 📄 README.md
 ```
 
 ---
@@ -448,7 +436,6 @@ A recruiter looking at a flat list can't see that my RAG pipelines, vector datab
 | ✅ | GitHub API live sync + deployment detection | 🔴 Core |
 | ✅ | Complexity-weighted node scaling + edge fading | 🔴 Core |
 | ✅ | ⌘K global search with camera fly-to | 🔴 Core |
-| ✅ | Pinecone AI insights on hover | 🔴 Core |
 | ✅ | GitHub Actions nightly scraper | 🔴 Core |
 | 🔄 | **LLM Auto-Summaries** — GPT/Groq auto-generates project descriptions on hover | 🟡 High |
 | 🔄 | **Social Graph** — ingest LinkedIn activity for a unified professional knowledge map | 🟡 High |
@@ -476,7 +463,6 @@ Get Neural Portfolio running locally in under **4 minutes**.
 | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white) | `≥ 3.10` | [python.org](https://www.python.org/) |
 | ![Git](https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white) | any | [git-scm.com](https://git-scm.com/) |
 | 🔑 **GitHub Token** | free | [github.com/settings/tokens](https://github.com/settings/tokens) |
-| 🔷 **Pinecone API Key** | free tier | [pinecone.io](https://www.pinecone.io/) |
 
 ### 10.2 ⬇️ Clone & Install
 
@@ -513,10 +499,6 @@ Create `backend/.env`:
 # GitHub API
 GITHUB_TOKEN=your_github_personal_access_token
 GITHUB_USERNAME=SalonyRanjan
-
-# Pinecone
-PINECONE_API_KEY=your_pinecone_api_key
-PINECONE_INDEX_NAME=neural-portfolio
 
 # AWS S3
 AWS_ACCESS_KEY_ID=your_access_key
@@ -614,7 +596,6 @@ on:
 | 🎯 **Graph FPS** | `60 FPS` | Custom rAF loop decoupled from React render |
 | ⚡ **Initial Load** | `< 1.5s` | S3-hosted `graph.json` + Vercel edge CDN |
 | 🔍 **Search Response** | `< 50ms` | Client-side node filter + smooth camera tween |
-| 🧠 **AI Insights** | `< 200ms` | FastAPI + Pinecone ANN with 400ms hover debounce |
 | 📦 **Bundle Size** | Minimised | Next.js code-splitting + Three.js tree-shaking |
 | 🌐 **SEO** | `100` | Static metadata, Open Graph, structured data |
 
