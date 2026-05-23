@@ -130,7 +130,7 @@ Neural Portfolio is a cinematic, spatial experience — built to communicate eng
 ### 🔍 Global Search — *⌘K Node Finder*
 
 <div align="center">
-  <img src="./assets/search.png" width="100%" alt="Neural Portfolio — Global Search"/>
+  <img src="./assets/search.png" width="400" alt="Neural Portfolio — Global Search"/>
   <p><i>⌘K launches the global search — find any node by name, tech, or category instantly.</i></p>
 </div>
 
@@ -141,7 +141,7 @@ Neural Portfolio is a cinematic, spatial experience — built to communicate eng
 ### 📊 Contextual Sidebar — *Project Drill-Down*
 
 <div align="center">
-  <img src="./assets/sidebar.png" width="400" alt="Neural Portfolio — Project Sidebar"/>
+  <img src="./assets/sidebar.png" width="300" alt="Neural Portfolio — Project Sidebar"/>
   <p><i>Click any node to open the contextual sidebar — tech stack, complexity score, live demo links.</i></p>
 </div>
 
@@ -152,8 +152,10 @@ Neural Portfolio is a cinematic, spatial experience — built to communicate eng
 ### 🧠 AI Insights Panel — *Hover Intelligence*
 
 <div align="center">
-  <img src="./assets/ai-insights.png" width="400" alt="Neural Portfolio — AI Insights"/>
-  <p><i>Pinecone-powered semantic summaries surface on node hover — no manual descriptions needed.</i></p>
+  <img src="./assets/1.png" width="500" alt="Neural Portfolio — AI Insights"/>
+   <img src="./assets/2.png" width="500" alt="Neural Portfolio — AI Insights"/>
+   <img src="./assets/3.png" width="500" alt="Neural Portfolio — AI Insights"/>
+   <img src="./assets/4.png" width="500" alt="Neural Portfolio — AI Insights"/>
 </div>
 
 > 🤖 **Pinecone vector search** retrieves semantically similar projects · FastAPI backend pre-generates embeddings via Python · Hover delay of 400ms prevents summary flicker during graph navigation
@@ -411,51 +413,29 @@ A recruiter looking at a flat list can't see that my RAG pipelines, vector datab
 ├── 🌐 frontend/                         # Next.js 14 App
 │   ├── 📄 app/
 │   │   ├── 🏠 page.tsx                  # Root — mounts the 3D canvas
-│   │   └── 📜 layout.tsx                # Global layout + providers
+│   │   ├── 📜 layout.tsx                # Global layout + SEO metadata
+│   │   └── 🎨 globals.css               # Global styles & neon themes
 │   │
 │   ├── 🧩 components/
 │   │   ├── 🌌 graph/
-│   │   │   ├── GraphCanvas.tsx          # R3F scene root + rAF loop
-│   │   │   ├── NodeMesh.tsx             # Individual node — size + colour
-│   │   │   ├── EdgeLine.tsx             # Distance-faded edge renderer
-│   │   │   └── useForceSimulation.ts    # Custom physics hook
-│   │   ├── 📊 sidebar/
-│   │   │   ├── ProjectSidebar.tsx       # Node detail panel
-│   │   │   └── TechChip.tsx             # Stack badge component
-│   │   ├── 🔍 search/
-│   │   │   └── CommandSearch.tsx        # ⌘K global search palette
-│   │   └── 🧠 insights/
-│   │       └── AIInsightsPanel.tsx      # Hover AI summary panel
+│   │   │   ├── Graph.tsx                # Scene root + rAF simulation
+│   │   │   └── Scene.tsx                # 3D canvas setup & hooks
+│   │   └── 📊 sidebar/                  # Project drill-down components
 │   │
-│   ├── 🪝 hooks/
-│   │   ├── useGraphData.ts              # fetch graph.json from S3
-│   │   ├── useNodeSelection.ts          # click state + camera fly-to
-│   │   └── useAIInsights.ts             # FastAPI insights fetcher
-│   │
-│   └── 📦 package.json
+│   └── 💾 data/
+│       └── 📄 portfolio-data.json       # Auto-synced GitHub metadata
 │
-├── 🐍 backend/                          # Python FastAPI Data Engine
-│   ├── ⚡ main.py                        # FastAPI app entry
-│   ├── 🔍 scraper/
-│   │   ├── github_scraper.py            # GitHub REST API client
-│   │   ├── deployment_detector.py       # Vercel/Streamlit URL finder
-│   │   └── complexity_scorer.py         # Project complexity 0–10 scorer
-│   ├── 🧠 embeddings/
-│   │   ├── embedder.py                  # Text → vector pipeline
-│   │   └── pinecone_client.py           # Pinecone upsert + query
-│   ├── 📄 graph_builder.py              # Nodes + edges → graph.json
-│   └── 📦 requirements.txt
+├── 🐍 data-engine/                      # Python Data Pipeline
+│   ├── 📜 fetcher.py                    # GitHub API scraper
+│   └── 📦 requirements.txt              # PyGithub & data dependencies
 │
 ├── ⚙️ .github/workflows/
-│   └── scraper.yml                      # Nightly GitHub Actions scraper
+│   └── update-data.yml                  # Nightly GitHub Action
 │
-├── 📄 assets/
-│   ├── 🎬 demo.gif                      # README demo animation
-│   ├── 🔍 search.png                    # ⌘K search screenshot
-│   ├── 📊 sidebar.png                   # Sidebar screenshot
-│   └── 🧠 ai-insights.png              # AI insights screenshot
+├── 📄 assets/                           # Media & Documentation
+│   └── 🎬 demo.gif                      # Project showcase loop
 │
-└── 📄 README.md
+└── 📄 README.md                         # Project landing page
 ```
 
 ---
