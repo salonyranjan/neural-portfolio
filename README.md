@@ -376,54 +376,33 @@ A recruiter looking at a flat list can't see that my RAG pipelines, vector datab
 ```
 🌌 neural-portfolio/
 │
-├── 🌐 frontend/                         # Next.js 14 App
-│   ├── 📄 app/
-│   │   ├── 🏠 page.tsx                  # Root — mounts the 3D canvas
-│   │   └── 📜 layout.tsx                # Global layout + providers
-│   │
-│   ├── 🧩 components/
-│   │   ├── 🌌 graph/
-│   │   │   ├── GraphCanvas.tsx          # R3F scene root + rAF loop
-│   │   │   ├── NodeMesh.tsx             # Individual node — size + colour
-│   │   │   ├── EdgeLine.tsx             # Distance-faded edge renderer
-│   │   │   └── useForceSimulation.ts    # Custom physics hook
-│   │   ├── 📊 sidebar/
-│   │   │   ├── ProjectSidebar.tsx       # Node detail panel
-│   │   │   └── TechChip.tsx             # Stack badge component
-│   │   ├── 🔍 search/
-│   │   │   └── CommandSearch.tsx        # ⌘K global search palette
-│   │   └── 🧠 insights/
-│   │       └── AIInsightsPanel.tsx      # Hover AI summary panel
-│   │
-│   ├── 🪝 hooks/
-│   │   ├── useGraphData.ts              # fetch graph.json from S3
-│   │   ├── useNodeSelection.ts          # click state + camera fly-to
-│   │   └── useAIInsights.ts             # FastAPI insights fetcher
-│   │
-│   └── 📦 package.json
-│
-├── 🐍 backend/                          # Python FastAPI Data Engine
-│   ├── ⚡ main.py                        # FastAPI app entry
-│   ├── 🔍 scraper/
-│   │   ├── github_scraper.py            # GitHub REST API client
-│   │   ├── deployment_detector.py       # Vercel/Streamlit URL finder
-│   │   └── complexity_scorer.py         # Project complexity 0–10 scorer
-│   ├── 🧠 embeddings/
-│   │   ├── embedder.py                  # Text → vector pipeline
-│   │   └── pinecone_client.py           # Pinecone upsert + query
-│   ├── 📄 graph_builder.py              # Nodes + edges → graph.json
-│   └── 📦 requirements.txt
-│
 ├── ⚙️ .github/workflows/
-│   └── scraper.yml                      # Nightly GitHub Actions scraper
+│   └── 🔄 update-data.yml               # Nightly GitHub Action (Scraper)
 │
-├── 📄 assets/
-│   ├── 🎬 demo.gif                      # README demo animation
-│   ├── 🔍 search.png                    # ⌘K search screenshot
-│   ├── 📊 sidebar.png                   # Sidebar screenshot
-│   └── 🧠 ai-insights.png              # AI insights screenshot
+├── 📂 assets/                           # Media & Documentation
+│   ├── 🎬 demo.gif                      # Project showcase loop
+│   └── 🎨 1.png, 2.png, ...             # UI assets & demo images
 │
-└── 📄 README.md
+├── 🐍 data-engine/                      # Python Data Pipeline
+│   ├── 📜 fetcher.py                    # GitHub API scraper logic
+│   └── 📦 requirements.txt              # PyGithub dependencies
+│
+├── 🌐 frontend/                         # Next.js 14 App
+│   ├── 📂 app/                          # App Router
+│   │   ├── 🌐 favicon.ico               # Browser tab icon
+│   │   ├── 🎨 globals.css               # Global styles & neon themes
+│   │   ├── 📜 layout.tsx                # Global layout & SEO
+│   │   └── 🏠 page.tsx                  # Root 3D interface
+│   │
+│   ├── 🧩 components/                   # React UI Components
+│   │   ├── 🌌 Graph.tsx                 # Force-directed simulation
+│   │   └── 🖥️ Scene.tsx                 # 3D canvas & R3F setup
+│   │
+│   └── 💾 data/                         # Persistent Store
+│       └── 📄 portfolio-data.json       # Auto-synced GitHub metadata
+│
+├── 📄 .gitignore                        # Files to ignore (node_modules, .env)
+└── 📄 README.md                         # Project landing page
 ```
 
 ---
