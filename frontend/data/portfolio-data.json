@@ -1,20 +1,25 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 111407.4,
+    "complexity_score": 111913.1,
     "url": "https://github.com/salonyranjan/salonyranjan"
+  },
+  {
+    "name": "Ultimate-TCS-NQT-Resources",
+    "complexity_score": 873051.5,
+    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
+  },
+  {
+    "name": "neural-portfolio",
+    "complexity_score": 74652.5,
+    "url": "https://github.com/salonyranjan/neural-portfolio",
+    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "ResQPlate",
     "complexity_score": 9304.75,
     "url": "https://github.com/manish01101/ResQPlate",
     "demoUrl": "https://resqplate-tan.vercel.app"
-  },
-  {
-    "name": "neural-portfolio",
-    "complexity_score": 74639.5,
-    "url": "https://github.com/salonyranjan/neural-portfolio",
-    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "RxScan-AI",
@@ -48,7 +53,7 @@
   },
   {
     "name": "VertexFlow",
-    "complexity_score": 566743.45,
+    "complexity_score": 435956.5,
     "url": "https://github.com/salonyranjan/VertexFlow",
     "demoUrl": "https://vertex-flow-phi.vercel.app"
   },
@@ -115,11 +120,6 @@
     "complexity_score": 26664.0,
     "url": "https://github.com/salonyranjan/CineNative",
     "demoUrl": "https://expo.dev/accounts/salonyy/projects/CineNative/builds/1f85f246-febf-4e37-89b3-51328a6fe666"
-  },
-  {
-    "name": "Ultimate-TCS-NQT-Resources",
-    "complexity_score": 873031.5,
-    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
   },
   {
     "name": "sonic-prep",
