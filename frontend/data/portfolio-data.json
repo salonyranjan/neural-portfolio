@@ -1,8 +1,20 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 113057.75,
+    "complexity_score": 113643.4,
     "url": "https://github.com/salonyranjan/salonyranjan"
+  },
+  {
+    "name": "neural-map",
+    "complexity_score": 16799.25,
+    "url": "https://github.com/salonyranjan/neural-map",
+    "demoUrl": "https://salonyranjan.github.io/neural-map/"
+  },
+  {
+    "name": "neural-portfolio",
+    "complexity_score": 74692.8,
+    "url": "https://github.com/salonyranjan/neural-portfolio",
+    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "ResQpla8",
@@ -11,21 +23,9 @@
     "demoUrl": "https://res-q-plate.vercel.app"
   },
   {
-    "name": "neural-map",
-    "complexity_score": 5630.95,
-    "url": "https://github.com/salonyranjan/neural-map",
-    "demoUrl": "https://salonyranjan.github.io/neural-map/"
-  },
-  {
     "name": "Ultimate-TCS-NQT-Resources",
     "complexity_score": 873071.5,
     "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
-  },
-  {
-    "name": "neural-portfolio",
-    "complexity_score": 74679.15,
-    "url": "https://github.com/salonyranjan/neural-portfolio",
-    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "ResQPlate",
@@ -41,7 +41,7 @@
   },
   {
     "name": "GTA-VI",
-    "complexity_score": 367623.1,
+    "complexity_score": 282787.0,
     "url": "https://github.com/salonyranjan/GTA-VI",
     "demoUrl": "https://gta-vi-woad.vercel.app"
   },
