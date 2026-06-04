@@ -1,19 +1,19 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 110795.1,
+    "complexity_score": 111300.8,
     "url": "https://github.com/salonyranjan/salonyranjan"
+  },
+  {
+    "name": "forestry-optimizer",
+    "complexity_score": 1197.95,
+    "url": "https://github.com/salonyranjan/forestry-optimizer"
   },
   {
     "name": "neural-portfolio",
     "complexity_score": 74745.45,
     "url": "https://github.com/salonyranjan/neural-portfolio",
     "demoUrl": "https://neural-portfolio.vercel.app"
-  },
-  {
-    "name": "forestry-optimizer",
-    "complexity_score": 13.0,
-    "url": "https://github.com/salonyranjan/forestry-optimizer"
   },
   {
     "name": "Ultimate-TCS-NQT-Resources",
