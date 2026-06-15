@@ -1,12 +1,12 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 111886.45,
+    "complexity_score": 112379.15,
     "url": "https://github.com/salonyranjan/salonyranjan"
   },
   {
     "name": "neural-portfolio",
-    "complexity_score": 74865.05,
+    "complexity_score": 74891.05,
     "url": "https://github.com/salonyranjan/neural-portfolio",
     "demoUrl": "https://neural-portfolio.vercel.app"
   },
@@ -22,7 +22,7 @@
   },
   {
     "name": "neural-map",
-    "complexity_score": 16799.25,
+    "complexity_score": 12922.5,
     "url": "https://github.com/salonyranjan/neural-map",
     "demoUrl": "https://salonyranjan.github.io/neural-map/"
   },
@@ -34,7 +34,7 @@
   },
   {
     "name": "ResQPlate",
-    "complexity_score": 7157.5,
+    "complexity_score": 9584.25,
     "url": "https://github.com/manish01101/ResQPlate",
     "demoUrl": "https://resqplate-tan.vercel.app"
   },
