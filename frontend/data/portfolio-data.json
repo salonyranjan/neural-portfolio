@@ -1,20 +1,20 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 115973.0,
+    "complexity_score": 116479.35,
     "url": "https://github.com/salonyranjan/salonyranjan"
+  },
+  {
+    "name": "neural-portfolio",
+    "complexity_score": 73932.95,
+    "url": "https://github.com/salonyranjan/neural-portfolio",
+    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "EcoCompute-Urban-Heat-Island-Optimizer",
     "complexity_score": 117876.85,
     "url": "https://github.com/salonyranjan/EcoCompute-Urban-Heat-Island-Optimizer",
     "demoUrl": "https://eco-compute-olive.vercel.app"
-  },
-  {
-    "name": "neural-portfolio",
-    "complexity_score": 73919.3,
-    "url": "https://github.com/salonyranjan/neural-portfolio",
-    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "ResQPlate",
