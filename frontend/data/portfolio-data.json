@@ -1,8 +1,14 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 115999.65,
+    "complexity_score": 116492.35,
     "url": "https://github.com/salonyranjan/salonyranjan"
+  },
+  {
+    "name": "ResQPlate",
+    "complexity_score": 10929.1,
+    "url": "https://github.com/manish01101/ResQPlate",
+    "demoUrl": "https://resqplate-tan.vercel.app"
   },
   {
     "name": "neural-portfolio",
@@ -20,12 +26,6 @@
     "complexity_score": 117903.5,
     "url": "https://github.com/salonyranjan/EcoCompute-Urban-Heat-Island-Optimizer",
     "demoUrl": "https://eco-compute-olive.vercel.app"
-  },
-  {
-    "name": "ResQPlate",
-    "complexity_score": 10089.95,
-    "url": "https://github.com/manish01101/ResQPlate",
-    "demoUrl": "https://resqplate-tan.vercel.app"
   },
   {
     "name": "Rewind",
