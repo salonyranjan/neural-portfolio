@@ -1,20 +1,20 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 116492.35,
+    "complexity_score": 116985.05,
     "url": "https://github.com/salonyranjan/salonyranjan"
   },
   {
-    "name": "ResQPlate",
-    "complexity_score": 10929.1,
-    "url": "https://github.com/manish01101/ResQPlate",
-    "demoUrl": "https://resqplate-tan.vercel.app"
-  },
-  {
     "name": "neural-portfolio",
-    "complexity_score": 74025.9,
+    "complexity_score": 74038.9,
     "url": "https://github.com/salonyranjan/neural-portfolio",
     "demoUrl": "https://neural-portfolio.vercel.app"
+  },
+  {
+    "name": "ResQPlate",
+    "complexity_score": 10982.4,
+    "url": "https://github.com/manish01101/ResQPlate",
+    "demoUrl": "https://resqplate-tan.vercel.app"
   },
   {
     "name": "Ultimate-TCS-NQT-Resources",
