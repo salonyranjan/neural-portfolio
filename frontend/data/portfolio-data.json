@@ -1,14 +1,13 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 118981.85,
+    "complexity_score": 114229.05,
     "url": "https://github.com/salonyranjan/salonyranjan"
   },
   {
-    "name": "Rewind",
-    "complexity_score": 270192.65,
-    "url": "https://github.com/salonyranjan/Rewind",
-    "demoUrl": "https://rewind-pied.vercel.app"
+    "name": "Ultimate-TCS-NQT-Resources",
+    "complexity_score": 873232.5,
+    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
   },
   {
     "name": "neural-portfolio",
@@ -17,9 +16,10 @@
     "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
-    "name": "Ultimate-TCS-NQT-Resources",
-    "complexity_score": 873252.5,
-    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
+    "name": "Rewind",
+    "complexity_score": 270192.65,
+    "url": "https://github.com/salonyranjan/Rewind",
+    "demoUrl": "https://rewind-pied.vercel.app"
   },
   {
     "name": "ResQPlate",
