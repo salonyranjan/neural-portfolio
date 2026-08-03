@@ -1,8 +1,38 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 115321.05,
+    "complexity_score": 116319.45,
     "url": "https://github.com/salonyranjan/salonyranjan"
+  },
+  {
+    "name": "Salony-s-Fitness-Club",
+    "complexity_score": 170720.0,
+    "url": "https://github.com/salonyranjan/Salony-s-Fitness-Club",
+    "demoUrl": "https://salony-s-fitness-club.vercel.app"
+  },
+  {
+    "name": "anime-grid",
+    "complexity_score": 354466.5,
+    "url": "https://github.com/salonyranjan/anime-grid",
+    "demoUrl": "https://anime-grid-nine.vercel.app"
+  },
+  {
+    "name": "EcoCompute-Urban-Heat-Island-Optimizer",
+    "complexity_score": 90715.0,
+    "url": "https://github.com/salonyranjan/EcoCompute-Urban-Heat-Island-Optimizer",
+    "demoUrl": "https://eco-compute-olive.vercel.app"
+  },
+  {
+    "name": "Rewind",
+    "complexity_score": 270218.65,
+    "url": "https://github.com/salonyranjan/Rewind",
+    "demoUrl": "https://rewind-pied.vercel.app"
+  },
+  {
+    "name": "neural-portfolio",
+    "complexity_score": 74211.8,
+    "url": "https://github.com/salonyranjan/neural-portfolio",
+    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "VertexFlow",
@@ -16,28 +46,10 @@
     "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
   },
   {
-    "name": "neural-portfolio",
-    "complexity_score": 74198.15,
-    "url": "https://github.com/salonyranjan/neural-portfolio",
-    "demoUrl": "https://neural-portfolio.vercel.app"
-  },
-  {
-    "name": "Rewind",
-    "complexity_score": 270192.65,
-    "url": "https://github.com/salonyranjan/Rewind",
-    "demoUrl": "https://rewind-pied.vercel.app"
-  },
-  {
     "name": "ResQPlate",
-    "complexity_score": 10982.4,
+    "complexity_score": 8448.0,
     "url": "https://github.com/manish01101/ResQPlate",
     "demoUrl": "https://resqplate-tan.vercel.app"
-  },
-  {
-    "name": "EcoCompute-Urban-Heat-Island-Optimizer",
-    "complexity_score": 90695.0,
-    "url": "https://github.com/salonyranjan/EcoCompute-Urban-Heat-Island-Optimizer",
-    "demoUrl": "https://eco-compute-olive.vercel.app"
   },
   {
     "name": "neural-map",
@@ -70,12 +82,6 @@
     "demoUrl": "https://mocktail-seven.vercel.app"
   },
   {
-    "name": "anime-grid",
-    "complexity_score": 354446.5,
-    "url": "https://github.com/salonyranjan/anime-grid",
-    "demoUrl": "https://anime-grid-nine.vercel.app"
-  },
-  {
     "name": "salonyranjan.github.io",
     "complexity_score": 81.5,
     "url": "https://github.com/salonyranjan/salonyranjan.github.io",
@@ -103,12 +109,6 @@
     "complexity_score": 37795.0,
     "url": "https://github.com/salonyranjan/BitFlow",
     "demoUrl": "https://bit-flow-two.vercel.app"
-  },
-  {
-    "name": "Salony-s-Fitness-Club",
-    "complexity_score": 170700.0,
-    "url": "https://github.com/salonyranjan/Salony-s-Fitness-Club",
-    "demoUrl": "https://salony-s-fitness-club.vercel.app"
   },
   {
     "name": "PageWhisper",
