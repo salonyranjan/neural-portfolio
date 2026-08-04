@@ -1,8 +1,14 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 116319.45,
+    "complexity_score": 116864.8,
     "url": "https://github.com/salonyranjan/salonyranjan"
+  },
+  {
+    "name": "neural-portfolio",
+    "complexity_score": 74224.8,
+    "url": "https://github.com/salonyranjan/neural-portfolio",
+    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "Salony-s-Fitness-Club",
@@ -27,12 +33,6 @@
     "complexity_score": 270218.65,
     "url": "https://github.com/salonyranjan/Rewind",
     "demoUrl": "https://rewind-pied.vercel.app"
-  },
-  {
-    "name": "neural-portfolio",
-    "complexity_score": 74211.8,
-    "url": "https://github.com/salonyranjan/neural-portfolio",
-    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "VertexFlow",
