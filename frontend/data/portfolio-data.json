@@ -1,20 +1,43 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 117357.5,
+    "complexity_score": 117863.2,
     "url": "https://github.com/salonyranjan/salonyranjan"
+  },
+  {
+    "name": "Ultimate-TCS-NQT-Resources",
+    "complexity_score": 1135506.45,
+    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
+  },
+  {
+    "name": "RxScan-AI",
+    "complexity_score": 21779.5,
+    "url": "https://github.com/salonyranjan/RxScan-AI",
+    "demoUrl": "https://rx-scan-ai.vercel.app"
+  },
+  {
+    "name": "ResQpla8",
+    "complexity_score": 146441.0,
+    "url": "https://github.com/salonyranjan/ResQpla8",
+    "demoUrl": "https://res-q-plate.vercel.app"
+  },
+  {
+    "name": "BitFlow",
+    "complexity_score": 37815.0,
+    "url": "https://github.com/salonyranjan/BitFlow",
+    "demoUrl": "https://bit-flow-two.vercel.app"
+  },
+  {
+    "name": "neural-portfolio",
+    "complexity_score": 74251.45,
+    "url": "https://github.com/salonyranjan/neural-portfolio",
+    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "VertexFlow",
     "complexity_score": 575515.2,
     "url": "https://github.com/salonyranjan/VertexFlow",
     "demoUrl": "https://vertex-flow-phi.vercel.app"
-  },
-  {
-    "name": "neural-portfolio",
-    "complexity_score": 74238.45,
-    "url": "https://github.com/salonyranjan/neural-portfolio",
-    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "Salony-s-Fitness-Club",
@@ -41,11 +64,6 @@
     "demoUrl": "https://rewind-pied.vercel.app"
   },
   {
-    "name": "Ultimate-TCS-NQT-Resources",
-    "complexity_score": 873272.5,
-    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
-  },
-  {
     "name": "ResQPlate",
     "complexity_score": 8448.0,
     "url": "https://github.com/manish01101/ResQPlate",
@@ -56,18 +74,6 @@
     "complexity_score": 12922.5,
     "url": "https://github.com/salonyranjan/neural-map",
     "demoUrl": "https://salonyranjan.github.io/neural-map/"
-  },
-  {
-    "name": "ResQpla8",
-    "complexity_score": 146421.0,
-    "url": "https://github.com/salonyranjan/ResQpla8",
-    "demoUrl": "https://res-q-plate.vercel.app"
-  },
-  {
-    "name": "RxScan-AI",
-    "complexity_score": 21759.5,
-    "url": "https://github.com/salonyranjan/RxScan-AI",
-    "demoUrl": "https://rx-scan-ai.vercel.app"
   },
   {
     "name": "GTA-VI",
@@ -103,12 +109,6 @@
     "name": "CuraMind-AI",
     "complexity_score": 111431.5,
     "url": "https://github.com/salonyranjan/CuraMind-AI"
-  },
-  {
-    "name": "BitFlow",
-    "complexity_score": 37795.0,
-    "url": "https://github.com/salonyranjan/BitFlow",
-    "demoUrl": "https://bit-flow-two.vercel.app"
   },
   {
     "name": "PageWhisper",
