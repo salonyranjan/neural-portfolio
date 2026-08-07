@@ -14,22 +14,6 @@
 
 <br/>
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/salonyranjan/neural-portfolio/main.yml?label=build&style=for-the-badge)](https://github.com/salonyranjan/neural-portfolio/actions)
-[![Version](https://img.shields.io/badge/version-v1.0.0-6366f1?style=for-the-badge)](https://github.com/salonyranjan/neural-portfolio/releases)
-[![License](https://img.shields.io/badge/license-MIT-8b5cf6?style=for-the-badge)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/salonyranjan/neural-portfolio?style=for-the-badge&color=6366f1)](https://github.com/salonyranjan/neural-portfolio/stargazers)
-
-<img src="https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white" />
-<img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
-<img src="https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=three.js&logoColor=white" />
-<img src="https://img.shields.io/badge/R3F-React_Three_Fiber-6366f1?style=for-the-badge" />
-<img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
-<img src="https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-<img src="https://img.shields.io/badge/AWS-S3+EC2-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" />
-<img src="https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" />
-
-<br/><br/>
-
 > *"Not a résumé. Not a portfolio site. A living, breathing 3D knowledge graph that lets recruiters explore the relationships between skills, projects, and complexity — in real time."*
 
 <br/>
