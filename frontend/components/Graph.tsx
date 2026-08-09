@@ -50,7 +50,7 @@ const DEMO_MAP_SLUGGED: Record<string, string> = Object.fromEntries(
 );
 
 function resolveDemoUrl(name: string, fallback?: string): string | undefined {
-  return DEMO_MAP_SLUGGED[slugify(name)] || fallback;
+  return DEMO_MAP_SLUGGED[slugify(name)] ?? fallback;
 }
 
 interface PortfolioItem {
