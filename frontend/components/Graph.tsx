@@ -7,15 +7,6 @@ import {
 import type { NodeData, HoveredNode } from "./Scene";
 import portfolioData from "../data/portfolio-data.json";
 
-// ─── Portfolio data shape ─────────────────────────────────────────────────────
-interface PortfolioItem {
-  name: string;
-  url?: string;
-  demo_url?: string;
-  complexity_score?: number;
-  tags?: string[];
-}
-
 // ─── Live Demo Mapping ────────────────────────────────────────────────────────
 const DEMO_MAP: Record<string, string> = {
   "roast-my-code": "https://roast-my-code-delta.vercel.app",
@@ -43,26 +34,42 @@ const DEMO_MAP: Record<string, string> = {
   "roleradar": "https://roleradarz.streamlit.app",
 };
 
-/**
- * Normalizes a project name into a DEMO_MAP-safe slug: trimmed, lowercased,
- * with internal whitespace/underscores collapsed to single hyphens. Dots
- * are preserved since some slugs intentionally use them (e.g. "mediquery.ai").
- * Plain .toLowerCase() alone works only because current repo names already
- * use hyphens — this makes the lookup resilient if that ever changes.
- */
-function toSlug(name: string): string {
-  return name.trim().toLowerCase().replace(/[\s_]+/g, "-");
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Turns "Roast My Code" / "MediQuery.ai" / "roast_my code!" into
+ *  "roast-my-code" / "mediquery-ai" so name formatting in the data file
+ *  can't silently break a DEMO_MAP lookup. Applied to BOTH the map keys and
+ *  the incoming name, so punctuation differences (dots, spaces, underscores,
+ *  case) can never cause a mismatch — matching a raw, unnormalized string
+ *  against the map is what broke keys like "mediquery.ai" before. */
+const slugify = (s: string): string =>
+  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-+|-+$)/g, "");
+
+const DEMO_MAP_SLUGGED: Record<string, string> = Object.fromEntries(
+  Object.entries(DEMO_MAP).map(([key, url]) => [slugify(key), url]),
+);
+
+function resolveDemoUrl(name: string, fallback?: string): string | undefined {
+  return DEMO_MAP_SLUGGED[slugify(name)] || fallback;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function getNormalizedData(data: unknown): PortfolioItem[] {
+interface PortfolioItem {
+  name?: string;
+  url?: string;
+  demo_url?: string;
+  complexity_score?: number;
+  tags?: string[];
+}
+
+const getNormalizedData = (data: unknown): PortfolioItem[] => {
   if (Array.isArray(data)) return data as PortfolioItem[];
   if (data && typeof data === "object") {
-    const arr = Object.values(data as Record<string, unknown>).find((v) => Array.isArray(v));
-    return (arr as PortfolioItem[]) ?? [];
+    const entries = Object.values(data as Record<string, unknown>);
+    const arr = entries.find((v): v is PortfolioItem[] => Array.isArray(v));
+    return arr ?? [];
   }
   return [];
-}
+};
 
 // ─── Category config ──────────────────────────────────────────────────────────
 export const CATEGORIES: Record<
@@ -80,32 +87,20 @@ export const CATEGORIES: Record<
 export const getCat = (cat?: string) =>
   CATEGORIES[cat?.toLowerCase() ?? ""] ?? CATEGORIES.default;
 
-/**
- * Categorizes a project by name keywords first, falling back to the
- * complexity score only when nothing more specific matched.
- *
- * Previously the score check (`score > 250000`) ran FIRST in the `||`
- * chain, so any sufficiently complex repo was force-labeled "research"
- * before its name was ever checked — e.g. "VertexFlow" (575k) and
- * "Rewind" (270k) both had explicit name rules for "design"/"writing"
- * that could never fire. Keyword matches now take priority; score is a
- * last-resort fallback, not an override.
- */
 export function categorize(name: string, score: number): string {
   const n = name.toLowerCase();
+  if (n.includes("rag") || n.includes(".ai") || n.includes("mediquery") || score > 250000)
+    return "research";
   if (n.includes("dashboard") || n.includes("scan") || n.includes("radar"))
     return "tool";
   if (n.includes("grid") || n.includes("flow") || n.includes("vertex"))
     return "design";
   if (n.includes("whisper") || n.includes("rewind") || n.includes("salony"))
     return "writing";
-  if (n.includes("rag") || n.includes(".ai") || n.includes("mediquery"))
-    return "research";
-  if (score > 250_000) return "research";
   return "project";
 }
 
-// ─── Internal node type ────────────────────────────────────────────────────────
+// ─── Internal node type ───────────────────────────────────────────────────────
 export interface SimNode extends NodeData {
   x: number; y: number; z: number;
   vx: number; vy: number; vz: number;
@@ -124,7 +119,7 @@ export interface SimNode extends NodeData {
 
 export interface Edge { a: number; b: number }
 
-// ─── 3D Force simulation ───────────────────────────────────────────────────────
+// ─── 3D Force simulation ──────────────────────────────────────────────────────
 const REPEL      = 3200;
 const SPRING_LEN = 100;
 const SPRING_K   = 0.016;
@@ -173,7 +168,7 @@ function tickSimulation(nodes: SimNode[], edges: Edge[], selectedIdx: number) {
   }
 }
 
-// ─── 3D → 2D projection ─────────────────────────────────────────────────────────
+// ─── 3D → 2D projection ───────────────────────────────────────────────────────
 export interface Camera { rotX: number; rotY: number; zoom: number }
 
 function project(
@@ -190,7 +185,7 @@ function project(
   return { sx: W/2 + x1*scale, sy: H/2 + y2*scale, scale, depth: z2 };
 }
 
-// ─── Background particles ───────────────────────────────────────────────────────
+// ─── Background particles ─────────────────────────────────────────────────────
 const BG_COUNT    = 120;
 const bgParticles = Array.from({ length: BG_COUNT }, () => ({
   x:  Math.random(), y: Math.random(),
@@ -208,7 +203,7 @@ const NEBULAE = Array.from({ length: 5 }, (_, i) => ({
   opacity: 0.022 + Math.random() * 0.018,
 }));
 
-// ─── Exported handle ────────────────────────────────────────────────────────────
+// ─── Exported handle ──────────────────────────────────────────────────────────
 export interface GraphHandle {
   getHovered(): SimNode | null;
   getNodes(): SimNode[];
@@ -229,17 +224,26 @@ export interface GraphProps {
   searchIdx: number | null;
 }
 
-// ─── Shared radius formula ──────────────────────────────────────────────────────
-// Core node scale multiplier — the single knob for resizing all nodes globally.
-const NODE_SCALE = 12;
-
-/** Rendered pixel radius for a node, reused by drawing, labels, and hit-testing
- *  so they can never drift out of sync with each other. */
-function nodeRadius(nd: SimNode): number {
-  return nd.radius * nd.projScale * NODE_SCALE * nd.hoverScale;
+// ─── Cross-browser rounded rect (Safari < 16 has no ctx.roundRect) ────────────
+function roundedRectPath(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number, r: number,
+) {
+  ctx.beginPath();
+  if (typeof (ctx as any).roundRect === "function") {
+    (ctx as any).roundRect(x, y, w, h, r);
+    return;
+  }
+  const rad = Math.min(r, w / 2, h / 2);
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
 }
 
-// ─── Pill label renderer ────────────────────────────────────────────────────────
+// ─── Pill label renderer ──────────────────────────────────────────────────────
 /**
  * Draws a compact, clean label pill above a node.
  *
@@ -255,6 +259,7 @@ function drawLabel(
   nd: SimNode,
   now: number,
   dimAlpha: number,
+  reducedMotion: boolean,
 ) {
   const cfg = getCat(nd.category);
 
@@ -262,7 +267,7 @@ function drawLabel(
   const labelAlpha = Math.min(1, dimAlpha * (nd.projScale > 0.55 ? 1.0 : nd.hovered ? 0.8 : 0));
   if (labelAlpha <= 0.02) return;
 
-  const r = nodeRadius(nd);
+  const r = nd.radius * nd.projScale * NODE_SCALE * nd.hoverScale;
   const { sx, sy } = nd;
 
   // Font — scale smoothly but clamp tightly
@@ -292,8 +297,7 @@ function drawLabel(
     ? cfg.color + "99"
     : cfg.color + "40";
   ctx.lineWidth   = nd.hovered || nd.selected ? 1.0 : 0.6;
-  ctx.beginPath();
-  ctx.roundRect(plx, ply, pw, ph, ph / 2);
+  roundedRectPath(ctx, plx, ply, pw, ph, ph / 2);
   ctx.fill();
   ctx.stroke();
 
@@ -314,10 +318,10 @@ function drawLabel(
   ctx.fillText(nameText, sx + textOffsetX, ply + ph / 2);
   ctx.shadowBlur = 0;
 
-  // LIVE badge — small pulsing dot on the right
+  // LIVE badge — small pulsing dot on the right (static dot if reduced motion)
   if (nd.demoUrl) {
-    const pulse = (now * 0.0025 + nd.pulsePhase) % (Math.PI * 2);
-    const dotR  = 3 + Math.sin(pulse) * 0.6;
+    const pulse = reducedMotion ? 0 : (now * 0.0025 + nd.pulsePhase) % (Math.PI * 2);
+    const dotR  = reducedMotion ? 3 : 3 + Math.sin(pulse) * 0.6;
     const dotX  = plx + pw - px * 0.85;
     const dotY  = ply + ph / 2;
 
@@ -326,7 +330,7 @@ function drawLabel(
     g.addColorStop(0,   "rgba(0,245,196,0.35)");
     g.addColorStop(1,   "rgba(0,245,196,0)");
     ctx.fillStyle = g;
-    ctx.globalAlpha = labelAlpha * (0.5 + Math.sin(pulse) * 0.3);
+    ctx.globalAlpha = labelAlpha * (reducedMotion ? 0.5 : 0.5 + Math.sin(pulse) * 0.3);
     ctx.beginPath();
     ctx.arc(dotX, dotY, dotR * 3.5, 0, Math.PI * 2);
     ctx.fill();
@@ -345,18 +349,12 @@ function drawLabel(
   ctx.restore();
 }
 
-// ─── Visible-set cache ──────────────────────────────────────────────────────────
-/** Filters nodes/edges down to the currently-visible (unfiltered-out) subset.
- *  Only needs to run when the category filter or the underlying node/edge
- *  arrays change — NOT every animation frame. */
-function computeVisible(nodes: SimNode[], edges: Edge[]) {
-  const visNodes = nodes.filter((n) => n.filtered);
-  const visIdx = new Set(visNodes.map((n) => n.index ?? 0));
-  const visEdges = edges.filter((e) => visIdx.has(e.a) && visIdx.has(e.b));
-  return { visNodes, visEdges };
-}
+// ─── Core node scale multiplier ───────────────────────────────────────────────
+// Was 18 — reduced to 12 for tighter, cleaner nodes.
+// Adjust this single constant to resize all nodes globally.
+const NODE_SCALE = 12;
 
-// ─── Graph ──────────────────────────────────────────────────────────────────────
+// ─── Graph ────────────────────────────────────────────────────────────────────
 const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
   { canvas, onHover, onSelect, onNodeCount, camera, dragState, mousePos,
     onFps, filterCat, searchIdx },
@@ -364,24 +362,26 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
 ) {
   const nodesRef    = useRef<SimNode[]>([]);
   const edgesRef    = useRef<Edge[]>([]);
-  const visNodesRef = useRef<SimNode[]>([]);
-  const visEdgesRef = useRef<Edge[]>([]);
   const hoveredRef  = useRef<SimNode | null>(null);
   const selectedRef = useRef<SimNode | null>(null);
   const rafRef      = useRef<number>(0);
   const fpsRef      = useRef({ frames: 0, last: performance.now() });
   const autoRotRef  = useRef(0);
   const selectedIdx = useRef(-1);
+  const reducedMotionRef = useRef(false);
 
-  // Keep a stable ref to the latest onNodeCount so the (mount-only) build
-  // effect below never needs it in its dependency array.
-  const onNodeCountRef = useRef(onNodeCount);
-  useEffect(() => { onNodeCountRef.current = onNodeCount; }, [onNodeCount]);
+  // Cached visibility (only depends on filterCat, not on every animation
+  // frame) — avoids rebuilding filter()/Set()/filter() 60x/sec.
+  const visNodesRef = useRef<SimNode[]>([]);
+  const visEdgesRef = useRef<Edge[]>([]);
 
-  const refreshVisible = useCallback(() => {
-    const { visNodes, visEdges } = computeVisible(nodesRef.current, edgesRef.current);
-    visNodesRef.current = visNodes;
-    visEdgesRef.current = visEdges;
+  const recomputeVisibility = useCallback(() => {
+    const nodes = nodesRef.current;
+    const edges = edgesRef.current;
+    const vis = nodes.filter(n => n.filtered);
+    visNodesRef.current = vis;
+    const visSet = new Set(vis.map(n => n.index ?? 0));
+    visEdgesRef.current = edges.filter(e => visSet.has(e.a) && visSet.has(e.b));
   }, []);
 
   useImperativeHandle(ref, () => ({
@@ -401,25 +401,31 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
     },
   }));
 
-  // Build nodes & edges — runs exactly once on mount. `portfolioData` is a
-  // static import, so this never needs to re-run; it previously depended on
-  // `[onNodeCount]`, which meant an unmemoized parent callback (the common
-  // case) silently re-triggered the full O(n²) edge build + 160 warm-up
-  // physics ticks on every parent re-render.
+  // Respect prefers-reduced-motion: kill auto-rotate and calm the constant
+  // pulsing/orbiting so the scene isn't a11y-hostile motion by default.
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    reducedMotionRef.current = mq.matches;
+    const handler = (e: MediaQueryListEvent) => { reducedMotionRef.current = e.matches; };
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  // Build nodes & edges
   useEffect(() => {
     const raw = getNormalizedData(portfolioData);
     const nodes: SimNode[] = raw.map((d, i) => {
-      const cat = categorize(d.name ?? "", d.complexity_score ?? 0);
+      const name = d.name ?? `Project ${i}`;
+      const cat = categorize(name, d.complexity_score ?? 0);
       const cfg = getCat(cat);
       const theta = Math.random() * Math.PI * 2;
       const phi   = Math.acos(2 * Math.random() - 1);
       const r     = 90 + Math.random() * 70;
-      const slug  = toSlug(d.name ?? `Project ${i}`);
 
       return {
-        name:        d.name ?? `Project ${i}`,
-        url:         d.url  ?? "#",
-        demoUrl:     DEMO_MAP[slug] || d.demo_url,
+        name,
+        url:         d.url ?? "#",
+        demoUrl:     resolveDemoUrl(name, d.demo_url),
         category:    cat,
         description: `Complexity score: ${Math.round(d.complexity_score ?? 0).toLocaleString()}`,
         tags:        d.tags ?? ["AI", "Development"],
@@ -449,17 +455,16 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
     for (let t = 0; t < 160; t++) tickSimulation(nodes, edges, -1);
     nodesRef.current = nodes;
     edgesRef.current = edges;
-    refreshVisible();
-    onNodeCountRef.current(nodes.length);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    onNodeCount(nodes.length);
+    recomputeVisibility();
+  }, [onNodeCount, recomputeVisibility]);
 
   useEffect(() => {
     nodesRef.current.forEach(nd => {
       nd.filtered = filterCat === null || nd.category === filterCat;
     });
-    refreshVisible();
-  }, [filterCat, refreshVisible]);
+    recomputeVisibility();
+  }, [filterCat, recomputeVisibility]);
 
   useEffect(() => {
     if (searchIdx !== null) {
@@ -485,7 +490,7 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
     const draw = (now: number) => {
       const W = window.innerWidth, H = window.innerHeight;
       const nodes = nodesRef.current;
-      const edges = edgesRef.current;
+      const reducedMotion = reducedMotionRef.current;
 
       fpsRef.current.frames++;
       if (now - fpsRef.current.last >= 1000) {
@@ -493,12 +498,12 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         fpsRef.current = { frames: 0, last: now };
       }
 
-      if (!dragState.current.active) autoRotRef.current += 0.00055;
+      if (!dragState.current.active && !reducedMotion) autoRotRef.current += 0.00055;
       camera.rotX += (camera.targetRotX - camera.rotX)                      * 0.08;
       camera.rotY += (camera.targetRotY + autoRotRef.current - camera.rotY) * 0.06;
       camera.zoom += (camera.targetZoom - camera.zoom)                      * 0.10;
 
-      tickSimulation(nodes, edges, selectedIdx.current);
+      tickSimulation(nodes, edgesRef.current, selectedIdx.current);
 
       for (const nd of nodes) {
         const p = project(nd.x, nd.y, nd.z, camera, W, H);
@@ -511,7 +516,7 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
 
       ctx.clearRect(0, 0, W, H);
 
-      // ── Nebula atmosphere ───────────────────────────────────────────────────
+      // ── Nebula atmosphere ─────────────────────────────────────────────────
       for (const nb of NEBULAE) {
         const hex = nb.color.slice(1);
         const r = parseInt(hex.slice(0,2),16);
@@ -527,7 +532,7 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         ctx.fill();
       }
 
-      // ── Background particles ─────────────────────────────────────────────────
+      // ── Background particles ───────────────────────────────────────────────
       for (const p of bgParticles) {
         p.x += p.vx; p.y += p.vy;
         if (p.x < 0) p.x = 1; if (p.x > 1) p.x = 0;
@@ -560,10 +565,10 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
       }
       ctx.restore();
 
-      // ── Edges ───────────────────────────────────────────────────────────────
-      // visEdgesRef is only recomputed when the filter set changes; here we
-      // just re-sort the cached array in place by current on-screen depth.
-      const sortedEdges = visEdgesRef.current.sort((e1, e2) =>
+      // ── Edges ─────────────────────────────────────────────────────────────
+      const visNodes = visNodesRef.current;
+      const visEdges = visEdgesRef.current;
+      const sortedEdges = [...visEdges].sort((e1, e2) =>
           (nodes[e1.a].projScale + nodes[e1.b].projScale) -
           (nodes[e2.a].projScale + nodes[e2.b].projScale)
       );
@@ -603,8 +608,7 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
       }
       ctx.restore();
 
-      // ── Node trails ─────────────────────────────────────────────────────────
-      const visNodes = visNodesRef.current;
+      // ── Node trails ───────────────────────────────────────────────────────
       ctx.save();
       for (const nd of visNodes) {
         if (!nd.hovered && !nd.selected) continue;
@@ -621,14 +625,13 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
       }
       ctx.restore();
 
-      // ── Nodes (back to front) ───────────────────────────────────────────────
-      // Sorted in place — visNodes is a cached reference, so this avoids
-      // allocating a fresh array every frame just to reorder it.
-      const sortedNodes = visNodes.sort((a, b) => a.projScale - b.projScale);
+      // ── Nodes (back to front) ─────────────────────────────────────────────
+      const sortedNodes = [...visNodes].sort((a, b) => a.projScale - b.projScale);
 
       for (const nd of sortedNodes) {
         const cfg  = getCat(nd.category);
-        const r    = nodeRadius(nd);
+        // Core render radius — NODE_SCALE is the global tuning knob
+        const r    = nd.radius * nd.projScale * NODE_SCALE * nd.hoverScale;
         const { sx, sy } = nd;
         if (sx < -r*5 || sx > W+r*5 || sy < -r*5 || sy > H+r*5) continue;
 
@@ -638,9 +641,9 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         ctx.save();
         ctx.globalAlpha = dimAlpha;
 
-        // ── Selection dashed ring ────────────────────────────────────────────
+        // ── Selection dashed ring ──────────────────────────────────────────
         if (nd.selected) {
-          const t = now * 0.001;
+          const t = reducedMotion ? 0 : now * 0.001;
           const pulseR = r * (2.6 + Math.sin(t * 2.5) * 0.35);
           ctx.globalAlpha = dimAlpha * (0.45 + Math.sin(t * 2.5) * 0.2);
           ctx.strokeStyle = cfg.color;
@@ -654,7 +657,7 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         }
         ctx.globalAlpha = dimAlpha;
 
-        // ── Outer glow ──────────────────────────────────────────────────────
+        // ── Outer glow ────────────────────────────────────────────────────
         const glowR = r * 3.8;
         const grd = ctx.createRadialGradient(sx, sy, 0, sx, sy, glowR);
         grd.addColorStop(0,   cfg.glow + "0.18)");
@@ -665,9 +668,9 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         ctx.arc(sx, sy, glowR, 0, Math.PI*2);
         ctx.fill();
 
-        // ── LIVE orbit ring ─────────────────────────────────────────────────
+        // ── LIVE orbit ring ───────────────────────────────────────────────
         if (nd.demoUrl) {
-          const orbitAngle = (now * 0.0012 + nd.pulsePhase) % (Math.PI * 2);
+          const orbitAngle = reducedMotion ? 0 : (now * 0.0012 + nd.pulsePhase) % (Math.PI * 2);
           ctx.save();
           ctx.translate(sx, sy);
           ctx.rotate(orbitAngle);
@@ -682,8 +685,8 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
           ctx.restore();
         }
 
-        // ── Pulse ring ──────────────────────────────────────────────────────
-        const pulse  = (now * 0.001 + nd.pulsePhase) % (Math.PI * 2);
+        // ── Pulse ring ────────────────────────────────────────────────────
+        const pulse  = reducedMotion ? 0 : (now * 0.001 + nd.pulsePhase) % (Math.PI * 2);
         const ringR  = r * (1.9 + Math.sin(pulse * 0.9) * 0.22);
         const ringA  = dimAlpha * (0.14 + Math.sin(pulse * 0.9) * 0.07) *
           (nd.hovered ? 2.0 : nd.selected ? 2.6 : 1);
@@ -700,7 +703,7 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         ctx.arc(sx, sy, r * 1.4 + Math.sin(pulse * 1.5) * 1.5, 0, Math.PI*2);
         ctx.stroke();
 
-        // ── Core sphere ─────────────────────────────────────────────────────
+        // ── Core sphere ───────────────────────────────────────────────────
         ctx.globalAlpha = dimAlpha;
         const coreGrd = ctx.createRadialGradient(sx - r*0.35, sy - r*0.35, 0, sx, sy, r);
         coreGrd.addColorStop(0,    "#ffffff");
@@ -715,7 +718,7 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // ── Specular highlight ──────────────────────────────────────────────
+        // ── Specular highlight ────────────────────────────────────────────
         const specGrd = ctx.createRadialGradient(
           sx - r*0.3, sy - r*0.35, 0,
           sx - r*0.25, sy - r*0.25, r*0.48
@@ -730,15 +733,15 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
 
         ctx.restore();
 
-        // ── Label ───────────────────────────────────────────────────────────
-        drawLabel(ctx, nd, now, dimAlpha);
+        // ── Label ─────────────────────────────────────────────────────────
+        drawLabel(ctx, nd, now, dimAlpha, reducedMotion);
       }
 
-      // ── Hover hit-test ───────────────────────────────────────────────────────
+      // ── Hover hit-test ─────────────────────────────────────────────────────
       const mx = mousePos.current.x, my = mousePos.current.y;
       let hit: SimNode | null = null, hitDist = Infinity;
       for (const nd of visNodes) {
-        const r  = nodeRadius(nd) * 1.5;
+        const r  = nd.radius * nd.projScale * NODE_SCALE * nd.hoverScale * 1.5;
         const dx = nd.sx - mx, dy = nd.sy - my;
         const d  = Math.sqrt(dx*dx + dy*dy);
         if (d < r && d < hitDist) { hitDist = d; hit = nd; }
