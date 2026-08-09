@@ -9,26 +9,30 @@ import portfolioData from "../data/portfolio-data.json";
 
 // ─── Live Demo Mapping ────────────────────────────────────────────────────────
 const DEMO_MAP: Record<string, string> = {
-  "anime-grid": "https://anime-grid-nine.vercel.app",
-  "bitflow": "https://bit-flow-two.vercel.app",
-  "ct-patient-data-dashboard": "https://ct-patient-data-dashboard.vercel.app",
-  "frontend-resqplate-": "https://res-q-plate.vercel.app",
-  "resqplate": "https://res-q-plate.vercel.app",
-  "gta-vi": "https://gta-vi-woad.vercel.app",
-  "mediquery.ai": "https://mediquery-ai.streamlit.app",
-  "mocktail": "https://mocktail-seven.vercel.app",
-  "openshelf-e2e": "https://openshelf-e2e.streamlit.app",
-  "pagewhisper": "https://page-whisper.vercel.app",
+  "roast-my-code": "https://roast-my-code-delta.vercel.app",
+  "resqplate": "https://resqplate-tan.vercel.app",            
+  "ecocompute-urban-heat-island-optimizer": "https://eco-compute-olive.vercel.app",
+  "neural-portfolio": "https://neural-portfolio.vercel.app",
   "rewind": "https://rewind-pied.vercel.app",
-  "roleradar": "https://roleradarz.streamlit.app",
   "rxscan-ai": "https://rx-scan-ai.vercel.app",
-  "salony-s-fitness-club": "https://salony-s-fitness-club.vercel.app",
-  "skillbridge-ai": "https://skill-bridge-ai-orpin.vercel.app",
-  "sonic-prep": "https://sonic-prep.vercel.app",
+  "resqpla8": "https://res-q-plate.vercel.app",
+  "bitflow": "https://bit-flow-two.vercel.app",
   "vertexflow": "https://vertex-flow-phi.vercel.app",
-  "z-axis-cloud": "https://z-axis-cloud.vercel.app"
+  "salony-s-fitness-club": "https://salony-s-fitness-club.vercel.app",
+  "anime-grid": "https://anime-grid-nine.vercel.app",
+  "neural-map": "https://salonyranjan.github.io/neural-map/",   
+  "gta-vi": "https://gta-vi-woad.vercel.app",
+  "mocktail": "https://mocktail-seven.vercel.app",
+  "pagewhisper": "https://page-whisper.vercel.app",
+  "sonic-prep": "https://sonic-prep.vercel.app",
+  "z-axis-cloud": "https://z-axis-cloud.vercel.app",
+  "ct-patient-data-dashboard": "https://ct-patient-data-dashboard.vercel.app",
+  "skillbridge-ai": "https://skill-bridge-ai-orpin.vercel.app",
+  "quickcart": "https://quick-cart-blush-alpha.vercel.app",
+  "mediquery.ai": "https://mediquery-ai.streamlit.app",
+  "openshelf-e2e": "https://openshelf-e2e.streamlit.app",
+  "roleradar": "https://roleradarz.streamlit.app",
 };
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const getNormalizedData = (data: any): any[] => {
   if (Array.isArray(data)) return data;
