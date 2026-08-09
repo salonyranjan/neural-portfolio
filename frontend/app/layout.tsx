@@ -11,6 +11,13 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: 'Neural Portfolio | Knowledge Graph',
   description: 'An interactive 3D neural network visualization of my portfolio',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
   openGraph: {
     title: 'Neural Portfolio',
     description: 'An interactive 3D neural network visualization of my portfolio',
