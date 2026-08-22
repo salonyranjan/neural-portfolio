@@ -1,55 +1,55 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 125451.3,
+    "complexity_score": 115507.6,
     "url": "https://github.com/salonyranjan/salonyranjan"
   },
   {
-    "name": "neural-portfolio",
-    "complexity_score": 74889.1,
-    "url": "https://github.com/salonyranjan/neural-portfolio",
-    "demoUrl": "https://neural-portfolio.vercel.app"
+    "name": "Ultimate-TCS-NQT-Resources",
+    "complexity_score": 873646.5,
+    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
+  },
+  {
+    "name": "Rewind",
+    "complexity_score": 207992.5,
+    "url": "https://github.com/salonyranjan/Rewind",
+    "demoUrl": "https://rewind-pied.vercel.app"
+  },
+  {
+    "name": "EcoCompute-Urban-Heat-Island-Optimizer",
+    "complexity_score": 118114.75,
+    "url": "https://github.com/salonyranjan/EcoCompute-Urban-Heat-Island-Optimizer",
+    "demoUrl": "https://eco-compute-olive.vercel.app"
+  },
+  {
+    "name": "roast-my-code",
+    "complexity_score": 5961.15,
+    "url": "https://github.com/salonyranjan/roast-my-code",
+    "demoUrl": "https://roast-my-code-delta.vercel.app/"
+  },
+  {
+    "name": "sonic-prep",
+    "complexity_score": 161780.0,
+    "url": "https://github.com/salonyranjan/sonic-prep",
+    "demoUrl": "https://sonic-prep.vercel.app"
   },
   {
     "name": "VertexFlow",
-    "complexity_score": 442744.0,
+    "complexity_score": 442764.0,
     "url": "https://github.com/salonyranjan/VertexFlow",
     "demoUrl": "https://vertex-flow-phi.vercel.app"
+  },
+  {
+    "name": "neural-portfolio",
+    "complexity_score": 74902.75,
+    "url": "https://github.com/salonyranjan/neural-portfolio",
+    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "BhajiWala",
     "complexity_score": 37310.65,
     "url": "https://github.com/salonyranjan/BhajiWala",
     "demoUrl": "https://bhajiwala.onrender.com"
-  },
-  {
-    "name": "Ultimate-TCS-NQT-Resources",
-    "complexity_score": 873566.5,
-    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
-  },
-  {
-    "name": "sonic-prep",
-    "complexity_score": 161760.0,
-    "url": "https://github.com/salonyranjan/sonic-prep",
-    "demoUrl": "https://sonic-prep.vercel.app"
-  },
-  {
-    "name": "roast-my-code",
-    "complexity_score": 5935.15,
-    "url": "https://github.com/salonyranjan/roast-my-code",
-    "demoUrl": "https://roast-my-code-delta.vercel.app/"
-  },
-  {
-    "name": "Rewind",
-    "complexity_score": 270364.25,
-    "url": "https://github.com/salonyranjan/Rewind",
-    "demoUrl": "https://rewind-pied.vercel.app"
-  },
-  {
-    "name": "EcoCompute-Urban-Heat-Island-Optimizer",
-    "complexity_score": 118088.75,
-    "url": "https://github.com/salonyranjan/EcoCompute-Urban-Heat-Island-Optimizer",
-    "demoUrl": "https://eco-compute-olive.vercel.app"
   },
   {
     "name": "RxScan-AI",
