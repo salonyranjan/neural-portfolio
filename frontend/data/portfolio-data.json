@@ -1,25 +1,31 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 116013.3,
+    "complexity_score": 116506.0,
     "url": "https://github.com/salonyranjan/salonyranjan"
+  },
+  {
+    "name": "Ultimate-TCS-NQT-Resources",
+    "complexity_score": 873726.5,
+    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
+  },
+  {
+    "name": "ResQpla8",
+    "complexity_score": 259688.0,
+    "url": "https://github.com/salonyranjan/ResQpla8",
+    "demoUrl": "https://res-q-plate.vercel.app"
+  },
+  {
+    "name": "neural-portfolio",
+    "complexity_score": 74929.4,
+    "url": "https://github.com/salonyranjan/neural-portfolio",
+    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "sonic-prep",
     "complexity_score": 161800.0,
     "url": "https://github.com/salonyranjan/sonic-prep",
     "demoUrl": "https://sonic-prep.vercel.app"
-  },
-  {
-    "name": "Ultimate-TCS-NQT-Resources",
-    "complexity_score": 873686.5,
-    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
-  },
-  {
-    "name": "neural-portfolio",
-    "complexity_score": 74915.75,
-    "url": "https://github.com/salonyranjan/neural-portfolio",
-    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "Rewind",
@@ -56,12 +62,6 @@
     "complexity_score": 21779.5,
     "url": "https://github.com/salonyranjan/RxScan-AI",
     "demoUrl": "https://rx-scan-ai.vercel.app"
-  },
-  {
-    "name": "ResQpla8",
-    "complexity_score": 146441.0,
-    "url": "https://github.com/salonyranjan/ResQpla8",
-    "demoUrl": "https://res-q-plate.vercel.app"
   },
   {
     "name": "BitFlow",
