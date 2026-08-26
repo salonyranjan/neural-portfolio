@@ -1,25 +1,31 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 117011.7,
+    "complexity_score": 117517.4,
     "url": "https://github.com/salonyranjan/salonyranjan"
   },
   {
+    "name": "salonyranjan.github.io",
+    "complexity_score": 81.5,
+    "url": "https://github.com/salonyranjan/salonyranjan.github.io",
+    "demoUrl": "https://vertex-flow-phi.vercel.app/"
+  },
+  {
     "name": "ResQpla8",
-    "complexity_score": 274077.7,
+    "complexity_score": 316769.7,
     "url": "https://github.com/salonyranjan/ResQpla8",
     "demoUrl": "https://res-q-plate.vercel.app"
+  },
+  {
+    "name": "neural-portfolio",
+    "complexity_score": 74956.05,
+    "url": "https://github.com/salonyranjan/neural-portfolio",
+    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "Ultimate-TCS-NQT-Resources",
     "complexity_score": 873746.5,
     "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
-  },
-  {
-    "name": "neural-portfolio",
-    "complexity_score": 74942.4,
-    "url": "https://github.com/salonyranjan/neural-portfolio",
-    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "sonic-prep",
@@ -98,12 +104,6 @@
     "complexity_score": 362014.0,
     "url": "https://github.com/salonyranjan/Mocktail",
     "demoUrl": "https://mocktail-seven.vercel.app"
-  },
-  {
-    "name": "salonyranjan.github.io",
-    "complexity_score": 81.5,
-    "url": "https://github.com/salonyranjan/salonyranjan.github.io",
-    "demoUrl": "https://vertex-flow-phi.vercel.app/"
   },
   {
     "name": "MediQuery.ai",
