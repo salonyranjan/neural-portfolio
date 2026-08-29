@@ -1,12 +1,18 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 118262.95,
+    "complexity_score": 118515.8,
     "url": "https://github.com/salonyranjan/salonyranjan"
   },
   {
+    "name": "VertexFlow",
+    "complexity_score": 623157.6,
+    "url": "https://github.com/salonyranjan/VertexFlow",
+    "demoUrl": "https://vertex-flow-phi.vercel.app"
+  },
+  {
     "name": "neural-portfolio",
-    "complexity_score": 74969.05,
+    "complexity_score": 74982.7,
     "url": "https://github.com/salonyranjan/neural-portfolio",
     "demoUrl": "https://neural-portfolio.vercel.app"
   },
@@ -52,14 +58,8 @@
     "demoUrl": "https://roast-my-code-delta.vercel.app/"
   },
   {
-    "name": "VertexFlow",
-    "complexity_score": 442764.0,
-    "url": "https://github.com/salonyranjan/VertexFlow",
-    "demoUrl": "https://vertex-flow-phi.vercel.app"
-  },
-  {
     "name": "BhajiWala",
-    "complexity_score": 37310.65,
+    "complexity_score": 28700.5,
     "url": "https://github.com/salonyranjan/BhajiWala",
     "demoUrl": "https://bhajiwala.onrender.com"
   },
