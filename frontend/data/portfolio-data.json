@@ -1,25 +1,25 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 119394.6,
+    "complexity_score": 119767.05,
     "url": "https://github.com/salonyranjan/salonyranjan"
   },
   {
     "name": "Ultimate-TCS-NQT-Resources",
-    "complexity_score": 873786.5,
+    "complexity_score": 873806.5,
     "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
+  },
+  {
+    "name": "neural-portfolio",
+    "complexity_score": 75022.35,
+    "url": "https://github.com/salonyranjan/neural-portfolio",
+    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "VertexFlow",
     "complexity_score": 731329.95,
     "url": "https://github.com/salonyranjan/VertexFlow",
     "demoUrl": "https://vertex-flow-phi.vercel.app"
-  },
-  {
-    "name": "neural-portfolio",
-    "complexity_score": 75009.35,
-    "url": "https://github.com/salonyranjan/neural-portfolio",
-    "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "salonyranjan.github.io",
