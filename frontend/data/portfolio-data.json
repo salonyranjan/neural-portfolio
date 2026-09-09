@@ -1,23 +1,29 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 118422.85,
+    "complexity_score": 118914.9,
     "url": "https://github.com/salonyranjan/salonyranjan"
   },
   {
+    "name": "BitFlow",
+    "complexity_score": 37835.0,
+    "url": "https://github.com/salonyranjan/BitFlow",
+    "demoUrl": "https://bit-flow-two.vercel.app"
+  },
+  {
     "name": "Ultimate-TCS-NQT-Resources",
-    "complexity_score": 1402506.95,
+    "complexity_score": 1402532.95,
     "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
   },
   {
     "name": "neural-portfolio",
-    "complexity_score": 75088.65,
+    "complexity_score": 75102.3,
     "url": "https://github.com/salonyranjan/neural-portfolio",
     "demoUrl": "https://neural-portfolio.vercel.app"
   },
   {
     "name": "ResQpla8",
-    "complexity_score": 316795.7,
+    "complexity_score": 243689.0,
     "url": "https://github.com/salonyranjan/ResQpla8",
     "demoUrl": "https://res-q-plate.vercel.app"
   },
@@ -68,12 +74,6 @@
     "complexity_score": 21779.5,
     "url": "https://github.com/salonyranjan/RxScan-AI",
     "demoUrl": "https://rx-scan-ai.vercel.app"
-  },
-  {
-    "name": "BitFlow",
-    "complexity_score": 37815.0,
-    "url": "https://github.com/salonyranjan/BitFlow",
-    "demoUrl": "https://bit-flow-two.vercel.app"
   },
   {
     "name": "Salony-s-Fitness-Club",
