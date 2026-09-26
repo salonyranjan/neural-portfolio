@@ -1,12 +1,18 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 118448.2,
+    "complexity_score": 118940.25,
     "url": "https://github.com/salonyranjan/salonyranjan"
   },
   {
+    "name": "sonic-prep",
+    "complexity_score": 235805.7,
+    "url": "https://github.com/salonyranjan/sonic-prep",
+    "demoUrl": "https://sonic-prep.vercel.app"
+  },
+  {
     "name": "neural-portfolio",
-    "complexity_score": 74476.35,
+    "complexity_score": 74490.0,
     "url": "https://github.com/salonyranjan/neural-portfolio",
     "demoUrl": "https://neural-portfolio.vercel.app"
   },
@@ -38,12 +44,6 @@
     "complexity_score": 562561.5,
     "url": "https://github.com/salonyranjan/VertexFlow",
     "demoUrl": "https://vertex-flow-phi.vercel.app"
-  },
-  {
-    "name": "sonic-prep",
-    "complexity_score": 161800.0,
-    "url": "https://github.com/salonyranjan/sonic-prep",
-    "demoUrl": "https://sonic-prep.vercel.app"
   },
   {
     "name": "Rewind",
