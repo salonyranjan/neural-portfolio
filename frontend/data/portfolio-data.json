@@ -1,18 +1,23 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 119446.6,
+    "complexity_score": 119952.3,
     "url": "https://github.com/salonyranjan/salonyranjan"
   },
   {
     "name": "sonic-prep",
-    "complexity_score": 31879.25,
+    "complexity_score": 32717.75,
     "url": "https://github.com/salonyranjan/sonic-prep",
     "demoUrl": "https://sonic-prep.vercel.app"
   },
   {
+    "name": "Ultimate-TCS-NQT-Resources",
+    "complexity_score": 1078911.5,
+    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
+  },
+  {
     "name": "neural-portfolio",
-    "complexity_score": 74503.0,
+    "complexity_score": 74516.65,
     "url": "https://github.com/salonyranjan/neural-portfolio",
     "demoUrl": "https://neural-portfolio.vercel.app"
   },
@@ -21,11 +26,6 @@
     "complexity_score": 37895.0,
     "url": "https://github.com/salonyranjan/BitFlow",
     "demoUrl": "https://bit-flow-two.vercel.app"
-  },
-  {
-    "name": "Ultimate-TCS-NQT-Resources",
-    "complexity_score": 1078891.5,
-    "url": "https://github.com/salonyranjan/Ultimate-TCS-NQT-Resources"
   },
   {
     "name": "salonyranjan.github.io",
