@@ -1,20 +1,20 @@
 [
   {
     "name": "salonyranjan",
-    "complexity_score": 120697.85,
+    "complexity_score": 121190.55,
     "url": "https://github.com/salonyranjan/salonyranjan"
-  },
-  {
-    "name": "sonic-prep",
-    "complexity_score": 34754.2,
-    "url": "https://github.com/salonyranjan/sonic-prep",
-    "demoUrl": "https://sonic-prep.vercel.app"
   },
   {
     "name": "neural-portfolio",
     "complexity_score": 74543.3,
     "url": "https://github.com/salonyranjan/neural-portfolio",
     "demoUrl": "https://neural-portfolio.vercel.app"
+  },
+  {
+    "name": "sonic-prep",
+    "complexity_score": 34754.2,
+    "url": "https://github.com/salonyranjan/sonic-prep",
+    "demoUrl": "https://sonic-prep.vercel.app"
   },
   {
     "name": "Ultimate-TCS-NQT-Resources",
