@@ -129,6 +129,16 @@ const ORBITS = [
 
 export interface Camera { rotX: number; rotY: number; zoom: number }
 
+export function getPerspectivePitch(width: number, height: number): number {
+  if (height < 500 && width > height) {
+    return Math.asin(Math.max(0.10, Math.min(0.35, (height - 294) / (width - 48))));
+  }
+  if (width <= 768) return 0.68;
+  // Flatter orbital planes fill wide displays without cropping the planets.
+  const aspect = (height - 300) / (width - Math.max(144, width * 0.11));
+  return Math.asin(Math.max(0.14, Math.min(0.65, aspect)));
+}
+
 function orbitalPoint(orbit: typeof ORBITS[number], angle: number) {
   return {
     x: Math.cos(angle) * orbit.radius,
@@ -169,7 +179,9 @@ function orbitalLayout(W: number, H: number, camera: Camera) {
       minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
     }
   }
-  const fitScale = Math.max(24, Math.min((W - (compact ? 48 : 144)) / (maxX - minX), (height - (compact ? 52 : 112)) / (maxY - minY)));
+  const horizontalPadding = compact ? 48 : Math.max(144, W * 0.11);
+  const verticalPadding = compact ? 52 : Math.max(112, H * 0.12);
+  const fitScale = Math.max(24, Math.min((W - horizontalPadding) / (maxX - minX), (height - verticalPadding) / (maxY - minY)));
   const scale = fitScale * camera.zoom;
   return {
     cx: W / 2 - (maxX + minX) * scale / 2,
@@ -177,7 +189,7 @@ function orbitalLayout(W: number, H: number, camera: Camera) {
     scale, roll, compact,
     nodeScale: (compact
       ? Math.max(0.55, Math.min(1.18, fitScale / 420))
-      : Math.max(1.25, Math.min(2.0, fitScale / 270))) * camera.zoom,
+      : Math.max(1.25, fitScale / 270)) * camera.zoom,
   };
 }
 

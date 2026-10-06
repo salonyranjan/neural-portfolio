@@ -3,7 +3,7 @@
 import {
   useRef, useState, useEffect, useCallback,
 } from "react";
-import Graph, { GraphHandle, SimNode, CATEGORIES, getCat } from "./Graph";
+import Graph, { GraphHandle, SimNode, CATEGORIES, getCat, getPerspectivePitch } from "./Graph";
 
 // Types
 export type NodeData = {
@@ -909,7 +909,8 @@ function StatsStrip({ nodes }: { nodes: SimNode[] }) {
 
 // Scene
 export default function Scene() {
-  const initialPitch = typeof window !== "undefined" && (window.innerWidth <= 768 || window.innerHeight < 500) ? 0.68 : 0.48;
+  const initialPitch = typeof window !== "undefined"
+    ? getPerspectivePitch(window.innerWidth, window.innerHeight) : 0.48;
   const canvasRef  = useRef<HTMLCanvasElement>(null);
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
   const graphRef   = useRef<GraphHandle>(null);
@@ -925,8 +926,8 @@ export default function Scene() {
 
   const [cameraView, setCameraView] = useState<CameraView | null>("Perspective");
   const changeView = useCallback((view: CameraView) => {
-    camera.targetRotX = view === "Perspective" && (window.innerWidth <= 768 || window.innerHeight < 500)
-      ? 0.68 : CAMERA_VIEWS[view].pitch;
+    camera.targetRotX = view === "Perspective"
+      ? getPerspectivePitch(window.innerWidth, window.innerHeight) : CAMERA_VIEWS[view].pitch;
     camera.targetRotY = CAMERA_VIEWS[view].yaw;
     camera.targetZoom = 1;
     mousePos.current = { x: -9999, y: -9999 };
@@ -952,6 +953,9 @@ export default function Scene() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const resize = () => {
+      if (cameraView === "Perspective") {
+        camera.targetRotX = getPerspectivePitch(window.innerWidth, window.innerHeight);
+      }
       const dpr = window.devicePixelRatio || 1;
       canvas.width  = window.innerWidth  * dpr;
       canvas.height = window.innerHeight * dpr;
@@ -962,7 +966,7 @@ export default function Scene() {
     resize();
     window.addEventListener("resize", resize);
     return () => window.removeEventListener("resize", resize);
-  }, []);
+  }, [camera, cameraView]);
 
   // Keyboard shortcuts
   useEffect(() => {
