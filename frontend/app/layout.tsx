@@ -13,10 +13,10 @@ export const metadata: Metadata = {
   description: 'An interactive orbital portfolio connecting physics and my software engineering journey',
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.svg?v=orbital-n-2', type: 'image/svg+xml', sizes: 'any' },
+      { url: '/favicon.ico?v=orbital-n-2', type: 'image/x-icon', sizes: '64x64' },
     ],
-    apple: '/apple-touch-icon.png',
+    apple: '/apple-touch-icon.png?v=orbital-n-2',
   },
   openGraph: {
     title: 'Neural Portfolio',
