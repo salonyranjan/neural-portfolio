@@ -5,7 +5,7 @@ import {
 } from "react";
 import Graph, { GraphHandle, SimNode, CATEGORIES, getCat } from "./Graph";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// Types
 export type NodeData = {
   name: string;
   url: string;
@@ -21,7 +21,15 @@ export type HoveredNode = NodeData & { screenX: number; screenY: number };
 
 const CAT_KEYS = Object.keys(CATEGORIES).filter(k => k !== "default");
 
-// ─── Tooltip ──────────────────────────────────────────────────────────────────
+const CAMERA_VIEWS = {
+  Perspective: { pitch: 0.48, yaw: 0.25 },
+  Top: { pitch: Math.PI / 2, yaw: 0 },
+  Front: { pitch: 0, yaw: 0 },
+  Bottom: { pitch: -Math.PI / 2, yaw: 0 },
+};
+type CameraView = keyof typeof CAMERA_VIEWS;
+
+// Tooltip
 function NodeTooltip({ node, x, y }: { node: HoveredNode; x: number; y: number }) {
   const color = getCat(node.category).color;
   const ref   = useRef<HTMLDivElement>(null);
@@ -38,7 +46,8 @@ function NodeTooltip({ node, x, y }: { node: HoveredNode; x: number; y: number }
 
   // Smart placement: prefer right of cursor, flip left if near edge
   const OFFSET = 18;
-  const left = x + OFFSET + dims.w > vw - 16 ? x - dims.w - OFFSET : x + OFFSET;
+  const left = Math.max(10, Math.min(vw - dims.w - 10,
+    x + OFFSET + dims.w > vw - 16 ? x - dims.w - OFFSET : x + OFFSET));
   const top  = Math.max(10, Math.min(y - 20, vh - dims.h - 16));
 
   return (
@@ -143,7 +152,7 @@ function NodeTooltip({ node, x, y }: { node: HoveredNode; x: number; y: number }
               boxShadow:    "0 0 5px #00f5c4",
             }} />
           )}
-          {node.demoUrl ? "Live demo available · click to open" : "Click for details"}
+          {node.demoUrl ? "Live demo available · click for details" : "Click for details"}
         </div>
       </div>
       <style>{`
@@ -156,13 +165,13 @@ function NodeTooltip({ node, x, y }: { node: HoveredNode; x: number; y: number }
   );
 }
 
-// ─── Node Detail Sidebar ──────────────────────────────────────────────────────
+// Node Detail Sidebar
 function NodeDetail({ node, onClose }: { node: SimNode; onClose: () => void }) {
   const color = getCat(node.category).color;
   const pct   = Math.min(100, ((node.complexity ?? 0) / 400000) * 100);
 
   return (
-    <div style={{
+    <div className="node-detail" role="dialog" aria-label={node.name} style={{
       position:      "fixed",
       right:         0,
       top:           0,
@@ -222,6 +231,7 @@ function NodeDetail({ node, onClose }: { node: SimNode; onClose: () => void }) {
 
         <button
           onClick={onClose}
+          aria-label="Close node details"
           style={{
             position:       "absolute",
             top:            20,
@@ -383,7 +393,7 @@ function NodeDetail({ node, onClose }: { node: SimNode; onClose: () => void }) {
   );
 }
 
-// ─── Search Panel ──────────────────────────────────────────────────────────────
+// Search Panel
 function SearchPanel({
   nodes, onSelect, onClose,
 }: {
@@ -393,21 +403,27 @@ function SearchPanel({
 }) {
   const [q, setQ]   = useState("");
   const inputRef    = useRef<HTMLInputElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
 
-  const results = q.trim()
+  const query = q.trim().toLowerCase();
+  const results = query
     ? nodes.filter(n =>
-        n.name.toLowerCase().includes(q.toLowerCase()) ||
-        n.category.toLowerCase().includes(q.toLowerCase())
+        n.name.toLowerCase().includes(query) ||
+        n.category.toLowerCase().includes(query)
       ).slice(0, 8)
     : nodes.slice(0, 8);
+
+  useEffect(() => {
+    resultsRef.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
+  }, [active, query]);
 
   const commit = (idx: number) => { onSelect(idx); onClose(); };
 
   const onKey = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); setActive(a => Math.min(a + 1, results.length - 1)); }
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive(a => Math.max(0, Math.min(a + 1, results.length - 1))); }
     if (e.key === "ArrowUp")   { e.preventDefault(); setActive(a => Math.max(a - 1, 0)); }
     if (e.key === "Enter" && results[active]) commit(results[active].index ?? active);
     if (e.key === "Escape") onClose();
@@ -430,7 +446,7 @@ function SearchPanel({
       }}
       onClick={onClose}
     >
-      <div style={{ width: 500, maxWidth: "90vw" }} onClick={e => e.stopPropagation()}>
+      <div className="search-panel" role="dialog" aria-label="Find a project" style={{ width: 500, maxWidth: "90vw", maxHeight: "80dvh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
         {/* Input */}
         <div style={{
           display:      "flex",
@@ -445,6 +461,13 @@ function SearchPanel({
         }}>
           <span style={{ color: "rgba(0,245,196,0.55)", fontSize: 15, flexShrink: 0 }}>⌕</span>
           <input
+            className="search-input"
+            aria-label="Search nodes"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="true"
+            aria-controls="search-results"
+            aria-activedescendant={results[active] ? `search-result-${results[active].index}` : undefined}
             ref={inputRef}
             value={q}
             onChange={e => { setQ(e.target.value); setActive(0); }}
@@ -472,7 +495,7 @@ function SearchPanel({
         </div>
 
         {/* Results */}
-        <div style={{
+        <div ref={resultsRef} id="search-results" role="listbox" aria-label="Matching projects" style={{
           background:   "rgba(8,8,30,0.98)",
           border:       "1px solid rgba(255,255,255,0.07)",
           borderRadius: 11,
@@ -489,6 +512,9 @@ function SearchPanel({
             return (
               <div
                 key={nd.index ?? i}
+                id={`search-result-${nd.index}`}
+                role="option"
+                aria-selected={isActive}
                 onClick={() => commit(nd.index ?? i)}
                 onMouseEnter={() => setActive(i)}
                 style={{
@@ -559,7 +585,7 @@ function SearchPanel({
   );
 }
 
-// ─── HUD ──────────────────────────────────────────────────────────────────────
+// HUD
 function HUD({
   nodeCount, fps, filterCat, onFilter, onSearch,
 }: {
@@ -581,7 +607,7 @@ function HUD({
   return (
     <>
       {/* Top-left title */}
-      <div style={{
+      <div className="hud-title" style={{
         position:      "fixed",
         top:           24,
         left:          28,
@@ -589,46 +615,18 @@ function HUD({
         pointerEvents: "none",
         zIndex:        20,
       }}>
-        <div style={{
-          fontSize:      7,
-          letterSpacing: "0.46em",
-          color:         "rgba(0,245,196,0.5)",
-          marginBottom:  5,
-          textTransform: "uppercase",
-        }}>Neural Portfolio</div>
-        <div style={{
-          fontSize:      24,
-          fontWeight:    800,
-          color:         "#f5f5ff",
-          letterSpacing: "-0.025em",
-          fontFamily:    "'Space Grotesk','DM Sans',sans-serif",
-          lineHeight:    1,
-        }}>
-          Knowledge Graph
-        </div>
-        <div style={{
-          fontSize:    9,
-          color:       "rgba(255,255,255,0.2)",
-          marginTop:   6,
-          letterSpacing: "0.12em",
-          display:     "flex",
-          alignItems:  "center",
-          gap:         7,
-        }}>
-          <span style={{
-            display:      "inline-block",
-            width:        5,
-            height:       5,
-            borderRadius: "50%",
-            background:   "#00f5c4",
-            boxShadow:    "0 0 5px #00f5c4",
-          }} />
-          {nodeCount} nodes · force-directed · 3D
+        <div className="brand-lockup">
+          <img className="brand-logo" src="/logo.svg" alt="" width="48" height="48" />
+          <div className="brand-copy">
+            <h1>Neural Portfolio</h1>
+            <div className="brand-tagline">Engineering in Orbit</div>
+            <div className="brand-status">{nodeCount} nodes · physics meets software</div>
+          </div>
         </div>
       </div>
 
       {/* Top-right */}
-      <div style={{
+      <div className="hud-actions" style={{
         position:      "fixed",
         top:           20,
         right:         26,
@@ -694,7 +692,7 @@ function HUD({
       </div>
 
       {/* Bottom-left: categories */}
-      <div style={{
+      <div className="hud-categories" style={{
         position:  "fixed",
         bottom:    28,
         left:      28,
@@ -711,6 +709,10 @@ function HUD({
 
         <div
           onClick={() => onFilter(null)}
+          role="button"
+          tabIndex={0}
+          aria-pressed={filterCat === null}
+          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onFilter(null); } }}
           style={{
             display:    "flex",
             alignItems: "center",
@@ -746,6 +748,10 @@ function HUD({
             <div
               key={cat}
               onClick={() => onFilter(active ? null : cat)}
+              role="button"
+              tabIndex={0}
+              aria-pressed={active}
+              onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onFilter(active ? null : cat); } }}
               style={{
                 display:    "flex",
                 alignItems: "center",
@@ -779,7 +785,7 @@ function HUD({
       </div>
 
       {/* Bottom-right: controls */}
-      <div style={{
+      <div className="hud-controls" style={{
         position:      "fixed",
         bottom:        28,
         right:         26,
@@ -850,13 +856,13 @@ function HUD({
         { bottom: 0, left:  0,  borderBottom: "1px solid #00f5c422", borderLeft:    "1px solid #00f5c422" },
         { bottom: 0, right: 0,  borderBottom: "1px solid #00f5c422", borderRight:   "1px solid #00f5c422" },
       ].map((s, i) => (
-        <div key={i} style={{ position: "fixed", width: 32, height: 32, pointerEvents: "none", zIndex: 20, ...s as any }} />
+        <div key={i} style={{ position: "fixed", width: 32, height: 32, pointerEvents: "none", zIndex: 20, ...s }} />
       ))}
     </>
   );
 }
 
-// ─── Stats Strip ──────────────────────────────────────────────────────────────
+// Stats Strip
 function StatsStrip({ nodes }: { nodes: SimNode[] }) {
   if (!nodes.length) return null;
   const byCat = CAT_KEYS
@@ -864,7 +870,7 @@ function StatsStrip({ nodes }: { nodes: SimNode[] }) {
     .filter(x => x.count > 0);
 
   return (
-    <div style={{
+    <div className="stats-strip" style={{
       position:       "fixed",
       bottom:         28,
       left:           "50%",
@@ -901,18 +907,31 @@ function StatsStrip({ nodes }: { nodes: SimNode[] }) {
   );
 }
 
-// ─── Scene ────────────────────────────────────────────────────────────────────
+// Scene
 export default function Scene() {
+  const initialPitch = typeof window !== "undefined" && (window.innerWidth <= 768 || window.innerHeight < 500) ? 0.68 : 0.48;
   const canvasRef  = useRef<HTMLCanvasElement>(null);
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
   const graphRef   = useRef<GraphHandle>(null);
 
   const mousePos   = useRef({ x: -9999, y: -9999 });
-  const dragState  = useRef({ active: false, moved: false });
+  const mouseDragStart = useRef({ x: 0, y: 0 });
+  const compatibilityMouseUntil = useRef(0);
+  const dragState  = useRef({ active: false, moved: false, lastX: 0, lastY: 0 });
   const camera     = useRef({
-    rotX: 0.28, rotY: 0, zoom: 1.0,
-    targetRotX: 0.28, targetRotY: 0, targetZoom: 1.0,
+    rotX: initialPitch, rotY: 0.25, zoom: 1.0,
+    targetRotX: initialPitch, targetRotY: 0.25, targetZoom: 1.0,
   }).current;
+
+  const [cameraView, setCameraView] = useState<CameraView | null>("Perspective");
+  const changeView = useCallback((view: CameraView) => {
+    camera.targetRotX = view === "Perspective" && (window.innerWidth <= 768 || window.innerHeight < 500)
+      ? 0.68 : CAMERA_VIEWS[view].pitch;
+    camera.targetRotY = CAMERA_VIEWS[view].yaw;
+    camera.targetZoom = 1;
+    mousePos.current = { x: -9999, y: -9999 };
+    setCameraView(view);
+  }, [camera]);
 
   const [hovered,    setHovered]    = useState<HoveredNode | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
@@ -921,7 +940,6 @@ export default function Scene() {
   const [nodeCount,  setNodeCount]  = useState(0);
   const [filterCat,  setFilterCat]  = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchIdx,  setSearchIdx]  = useState<number | null>(null);
   const [allNodes,   setAllNodes]   = useState<SimNode[]>([]);
 
   useEffect(() => {
@@ -950,39 +968,51 @@ export default function Scene() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setSearchOpen(true); }
-      if (e.key === "Escape") { setSearchOpen(false); setSelected(null); }
+      if (e.key === "Escape") {
+        setSearchOpen(false);
+        setSelected(null);
+        graphRef.current?.getNodes().forEach(nd => { nd.selected = false; });
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
   const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (performance.now() < compatibilityMouseUntil.current) return;
     mousePos.current = { x: e.clientX, y: e.clientY };
     setTooltipPos({ x: e.clientX, y: e.clientY });
     if (dragState.current.active) {
-      const dx = e.clientX - (dragState.current as any).lastX;
-      const dy = e.clientY - (dragState.current as any).lastY;
-      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragState.current.moved = true;
+      const dx = e.clientX - dragState.current.lastX;
+      const dy = e.clientY - dragState.current.lastY;
+      if (Math.hypot(e.clientX - mouseDragStart.current.x, e.clientY - mouseDragStart.current.y) > 4) dragState.current.moved = true;
       camera.targetRotY += dx * 0.006;
-      camera.targetRotX  = Math.max(-1.2, Math.min(1.2, camera.targetRotX + dy * 0.006));
-      (dragState.current as any).lastX = e.clientX;
-      (dragState.current as any).lastY = e.clientY;
+      camera.targetRotX  = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.targetRotX + dy * 0.006));
+      if (dragState.current.moved) setCameraView(null);
+      dragState.current.lastX = e.clientX;
+      dragState.current.lastY = e.clientY;
     }
   }, [camera]);
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
-    (dragState.current as any).lastX = e.clientX;
-    (dragState.current as any).lastY = e.clientY;
+    if (performance.now() < compatibilityMouseUntil.current) return;
+    if (e.button !== 0) return;
+    mouseDragStart.current = { x: e.clientX, y: e.clientY };
+    mousePos.current = { x: e.clientX, y: e.clientY };
+    dragState.current.lastX = e.clientX;
+    dragState.current.lastY = e.clientY;
     dragState.current.active = true;
     dragState.current.moved  = false;
   }, []);
 
   const onMouseUp = useCallback(() => {
+    if (performance.now() < compatibilityMouseUntil.current) return;
+    if (!dragState.current.active) return;
     const wasDrag = dragState.current.moved;
     dragState.current.active = false;
     dragState.current.moved  = false;
     if (!wasDrag) {
-      const nd = graphRef.current?.getHovered();
+      const nd = graphRef.current?.getNodeAt(mousePos.current.x, mousePos.current.y);
       if (nd) {
         setSelected(nd as SimNode);
         graphRef.current?.focusNode(nd.index ?? 0);
@@ -995,41 +1025,65 @@ export default function Scene() {
     dragState.current.active = false;
   }, []);
 
-  const onWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    camera.targetZoom = Math.max(0.28, Math.min(3.8, camera.targetZoom - e.deltaY * 0.001));
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const wheel = (e: WheelEvent) => {
+      e.preventDefault();
+      camera.targetZoom = Math.max(0.28, Math.min(3.8, camera.targetZoom - e.deltaY * 0.001));
+    };
+    canvas.addEventListener("wheel", wheel, { passive: false });
+    return () => canvas.removeEventListener("wheel", wheel);
   }, [camera]);
 
-  const touchRef = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  const touchRef = useRef<{ x: number; y: number; startX: number; startY: number; moved: boolean } | null>(null);
 
   const onTouchStart = useCallback((e: React.TouchEvent) => {
+    compatibilityMouseUntil.current = performance.now() + 800;
     const t = e.touches[0];
-    touchRef.current = { x: t.clientX, y: t.clientY, moved: false };
+    if (!t) return;
+    touchRef.current = { x: t.clientX, y: t.clientY, startX: t.clientX, startY: t.clientY, moved: false };
+    dragState.current.active = true;
     mousePos.current = { x: t.clientX, y: t.clientY };
   }, []);
 
   const onTouchMove = useCallback((e: React.TouchEvent) => {
     const t = e.touches[0];
+    if (!t) return;
     mousePos.current = { x: t.clientX, y: t.clientY };
     if (touchRef.current) {
       const dx = t.clientX - touchRef.current.x;
       const dy = t.clientY - touchRef.current.y;
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) touchRef.current.moved = true;
+      if (Math.hypot(t.clientX - touchRef.current.startX, t.clientY - touchRef.current.startY) > 6) touchRef.current.moved = true;
       camera.targetRotY += dx * 0.007;
-      camera.targetRotX  = Math.max(-1.2, Math.min(1.2, camera.targetRotX + dy * 0.007));
+      camera.targetRotX  = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.targetRotX + dy * 0.007));
+      if (touchRef.current.moved) setCameraView(null);
       touchRef.current.x = t.clientX;
       touchRef.current.y = t.clientY;
     }
   }, [camera]);
 
-  const onTouchEnd = useCallback(() => {
-    if (touchRef.current && !touchRef.current.moved) {
-      const nd = graphRef.current?.getHovered();
-      if (nd) setSelected(nd as SimNode);
+  const onTouchEnd = useCallback((e: React.TouchEvent) => {
+    compatibilityMouseUntil.current = performance.now() + 800;
+    const start = touchRef.current;
+    const end = e.changedTouches[0];
+    if (start) {
+      const x = end?.clientX ?? start.x, y = end?.clientY ?? start.y;
+      const moved = start.moved || Math.hypot(x - start.startX, y - start.startY) > 6;
+      if (moved) {
+        // Mobile browsers may coalesce tiny moves until the gesture ends.
+        camera.targetRotY += (x - start.x) * 0.007;
+        camera.targetRotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.targetRotX + (y - start.y) * 0.007));
+        setCameraView(null);
+      } else {
+        const nd = graphRef.current?.getNodeAt(x, y);
+        if (nd) graphRef.current?.focusNode(nd.index ?? 0);
+      }
     }
     touchRef.current = null;
+    dragState.current.active = false;
     mousePos.current = { x: -9999, y: -9999 };
-  }, []);
+  }, [camera]);
 
   const onHover  = useCallback((node: HoveredNode | null) => { setHovered(node); }, []);
   const onSelect = useCallback((node: SimNode | null) => {
@@ -1039,18 +1093,19 @@ export default function Scene() {
 
   const handleNodeCountChange = useCallback((n: number) => {
     setNodeCount(n);
-    setTimeout(() => setAllNodes(graphRef.current?.getNodes() ?? []), 200);
+    setAllNodes(graphRef.current?.getNodes() ?? []);
   }, []);
 
   const handleSearch = useCallback((idx: number) => {
-    setSearchIdx(idx);
+    setFilterCat(null);
+    graphRef.current?.focusNode(idx);
     setAllNodes(graphRef.current?.getNodes() ?? []);
   }, []);
 
   return (
     <div style={{
       width:     "100vw",
-      height:    "100vh",
+      height:    "100dvh",
       position:  "fixed",
       inset:     0,
       background: "#030310",
@@ -1058,15 +1113,19 @@ export default function Scene() {
     }}>
       <canvas
         ref={canvasRef}
-        style={{ position: "absolute", inset: 0, display: "block" }}
+        style={{ position: "absolute", inset: 0, display: "block", touchAction: "none" }}
         onMouseMove={onMouseMove}
         onMouseDown={onMouseDown}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseLeave}
-        onWheel={onWheel}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
+        onTouchCancel={() => {
+          touchRef.current = null;
+          dragState.current.active = false;
+          mousePos.current = { x: -9999, y: -9999 };
+        }}
       />
 
       <Graph
@@ -1080,18 +1139,32 @@ export default function Scene() {
         mousePos={mousePos}
         onFps={setFps}
         filterCat={filterCat}
-        searchIdx={searchIdx}
       />
 
       <HUD
         nodeCount={nodeCount}
         fps={fps}
         filterCat={filterCat}
-        onFilter={setFilterCat}
+        onFilter={cat => {
+          setFilterCat(cat);
+          setSelected(null);
+          graphRef.current?.getNodes().forEach(node => { node.selected = false; });
+        }}
         onSearch={() => setSearchOpen(true)}
       />
 
       <StatsStrip nodes={allNodes} />
+
+      <div className="camera-views" role="group" aria-label="Camera view">
+        {(Object.keys(CAMERA_VIEWS) as CameraView[]).map(view => (
+          <button
+            key={view}
+            type="button"
+            aria-pressed={cameraView === view}
+            onClick={() => changeView(view)}
+          >{view}</button>
+        ))}
+      </div>
 
       {hovered && !selected && (
         <NodeTooltip node={hovered} x={tooltipPos.x} y={tooltipPos.y} />

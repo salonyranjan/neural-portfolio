@@ -6,8 +6,9 @@ import {
 } from "react";
 import type { NodeData, HoveredNode } from "./Scene";
 import portfolioData from "../data/portfolio-data.json";
+import unavailableDemoUrls from "../data/unavailable-demo-urls.json";
 
-// ─── Live Demo Mapping ────────────────────────────────────────────────────────
+// Live Demo Mapping
 const DEMO_MAP: Record<string, string> = {
   "roast-my-code": "https://roast-my-code-delta.vercel.app",
   "resqplate": "https://resqplate-tan.vercel.app",
@@ -34,14 +35,9 @@ const DEMO_MAP: Record<string, string> = {
   "roleradar": "https://roleradarz.streamlit.app",
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// Helpers
 
-/** Turns "Roast My Code" / "MediQuery.ai" / "roast_my code!" into
- *  "roast-my-code" / "mediquery-ai" so name formatting in the data file
- *  can't silently break a DEMO_MAP lookup. Applied to BOTH the map keys and
- *  the incoming name, so punctuation differences (dots, spaces, underscores,
- *  case) can never cause a mismatch — matching a raw, unnormalized string
- *  against the map is what broke keys like "mediquery.ai" before. */
+// Normalize both project names and demo keys so punctuation does not affect lookup.
 const slugify = (s: string): string =>
   s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-+|-+$)/g, "");
 
@@ -49,14 +45,19 @@ const DEMO_MAP_SLUGGED: Record<string, string> = Object.fromEntries(
   Object.entries(DEMO_MAP).map(([key, url]) => [slugify(key), url]),
 );
 
+// Verified unavailable during the 2026-10-05 link audit. Original URLs remain
+// in portfolio-data.json; remove an entry from this list after service recovery.
+const unavailableDemos = new Set(unavailableDemoUrls.map(url => url.replace(/\/+$/, "")));
 function resolveDemoUrl(name: string, fallback?: string): string | undefined {
-  return DEMO_MAP_SLUGGED[slugify(name)] ?? fallback;
+  const url = fallback ?? DEMO_MAP_SLUGGED[slugify(name)];
+  return url && !unavailableDemos.has(url.replace(/\/+$/, "")) ? url : undefined;
 }
 
 interface PortfolioItem {
   name?: string;
   url?: string;
   demo_url?: string;
+  demoUrl?: string;
   complexity_score?: number;
   tags?: string[];
 }
@@ -71,17 +72,17 @@ const getNormalizedData = (data: unknown): PortfolioItem[] => {
   return [];
 };
 
-// ─── Category config ──────────────────────────────────────────────────────────
+// Category config
 export const CATEGORIES: Record<
   string,
-  { color: string; glow: string; radius: number; hex: string }
+  { color: string; glow: string; radius: number }
 > = {
-  project:  { color: "#00f5c4", glow: "rgba(0,245,196,",   radius: 5.5, hex: "#00f5c4" },
-  writing:  { color: "#ff6bbd", glow: "rgba(255,107,189,", radius: 4.5, hex: "#ff6bbd" },
-  research: { color: "#a78bfa", glow: "rgba(167,139,250,", radius: 7,   hex: "#a78bfa" },
-  tool:     { color: "#ffd166", glow: "rgba(255,209,102,", radius: 5,   hex: "#ffd166" },
-  design:   { color: "#06d6a0", glow: "rgba(6,214,160,",   radius: 5.5, hex: "#06d6a0" },
-  default:  { color: "#74b3fe", glow: "rgba(116,179,254,", radius: 5,   hex: "#74b3fe" },
+  project:  { color: "#00ffd5", glow: "rgba(0,255,213,",   radius: 5.5 },
+  writing:  { color: "#ff2ebc", glow: "rgba(255,46,188,",  radius: 4.5 },
+  research: { color: "#bf5cff", glow: "rgba(191,92,255,",  radius: 7 },
+  tool:     { color: "#ffe838", glow: "rgba(255,232,56,",  radius: 5 },
+  design:   { color: "#00e5ff", glow: "rgba(0,229,255,",   radius: 5.5 },
+  default:  { color: "#4c9fff", glow: "rgba(76,159,255,",  radius: 5 },
 };
 
 export const getCat = (cat?: string) =>
@@ -100,10 +101,10 @@ export function categorize(name: string, score: number): string {
   return "project";
 }
 
-// ─── Internal node type ───────────────────────────────────────────────────────
+// Internal node type
 export interface SimNode extends NodeData {
   x: number; y: number; z: number;
-  vx: number; vy: number; vz: number;
+  orbitIndex: number; orbitAngle: number;
   sx: number; sy: number; projScale: number;
   projDepth: number;
   radius: number;
@@ -112,80 +113,75 @@ export interface SimNode extends NodeData {
   filtered: boolean;
   hoverScale: number;
   pulsePhase: number;
-  trailX: number[]; trailY: number[];
   complexity: number;
   demoUrl?: string;
 }
 
-export interface Edge { a: number; b: number }
+// Category lanes stay fixed even when a filter is active. The most populated
+// category has the outer orbit, giving its nodes the greatest circumference.
+const ORBITS = [
+  { category: "design", radius: 0.20, inclination: 0.08 },
+  { category: "tool", radius: 0.39, inclination: -0.05 },
+  { category: "writing", radius: 0.59, inclination: 0.06 },
+  { category: "research", radius: 0.79, inclination: -0.04 },
+  { category: "project", radius: 1.00, inclination: 0.02 },
+];
 
-// ─── 3D Force simulation ──────────────────────────────────────────────────────
-const REPEL      = 3200;
-const SPRING_LEN = 100;
-const SPRING_K   = 0.016;
-const DAMP       = 0.86;
-const CENTER_K   = 0.003;
-const ATTRACT_K  = 0.0008;
-
-function tickSimulation(nodes: SimNode[], edges: Edge[], selectedIdx: number) {
-  const n = nodes.length;
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      const dx = nodes[j].x - nodes[i].x;
-      const dy = nodes[j].y - nodes[i].y;
-      const dz = nodes[j].z - nodes[i].z;
-      const dist2 = dx*dx + dy*dy + dz*dz + 0.01;
-      const dist  = Math.sqrt(dist2);
-      const f     = REPEL / dist2;
-      const ix = (f*dx)/dist, iy = (f*dy)/dist, iz = (f*dz)/dist;
-      nodes[i].vx -= ix; nodes[i].vy -= iy; nodes[i].vz -= iz;
-      nodes[j].vx += ix; nodes[j].vy += iy; nodes[j].vz += iz;
-    }
-  }
-  for (const e of edges) {
-    const a = nodes[e.a], b = nodes[e.b];
-    const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
-    const dist = Math.sqrt(dx*dx + dy*dy + dz*dz) || 1;
-    const f    = (dist - SPRING_LEN) * SPRING_K;
-    a.vx += (f*dx)/dist; a.vy += (f*dy)/dist; a.vz += (f*dz)/dist;
-    b.vx -= (f*dx)/dist; b.vy -= (f*dy)/dist; b.vz -= (f*dz)/dist;
-  }
-  if (selectedIdx >= 0) {
-    const sel = nodes[selectedIdx];
-    for (const e of edges) {
-      const other = e.a === selectedIdx ? nodes[e.b] : e.b === selectedIdx ? nodes[e.a] : null;
-      if (!other) continue;
-      other.vx += (sel.x - other.x) * ATTRACT_K;
-      other.vy += (sel.y - other.y) * ATTRACT_K;
-      other.vz += (sel.z - other.z) * ATTRACT_K;
-    }
-  }
-  for (const nd of nodes) {
-    nd.vx = (nd.vx - nd.x * CENTER_K) * DAMP;
-    nd.vy = (nd.vy - nd.y * CENTER_K) * DAMP;
-    nd.vz = (nd.vz - nd.z * CENTER_K) * DAMP;
-    nd.x += nd.vx; nd.y += nd.vy; nd.z += nd.vz;
-  }
-}
-
-// ─── 3D → 2D projection ───────────────────────────────────────────────────────
 export interface Camera { rotX: number; rotY: number; zoom: number }
 
-function project(
-  x: number, y: number, z: number,
-  cam: Camera, W: number, H: number
-) {
-  const cosY = Math.cos(cam.rotY), sinY = Math.sin(cam.rotY);
-  const x1 = x*cosY - z*sinY, z1 = x*sinY + z*cosY;
-  const cosX = Math.cos(cam.rotX), sinX = Math.sin(cam.rotX);
-  const y2 =  y*cosX - z1*sinX, z2 = y*sinX + z1*cosX;
-  const fov   = 420 * cam.zoom;
-  const depth = fov + z2;
-  const scale = depth > 10 ? fov / depth : 0.01;
-  return { sx: W/2 + x1*scale, sy: H/2 + y2*scale, scale, depth: z2 };
+function orbitalPoint(orbit: typeof ORBITS[number], angle: number) {
+  return {
+    x: Math.cos(angle) * orbit.radius,
+    y: Math.sin(angle) * orbit.radius * Math.sin(orbit.inclination),
+    z: Math.sin(angle) * orbit.radius * Math.cos(orbit.inclination),
+  };
 }
 
-// ─── Background particles ─────────────────────────────────────────────────────
+// Rotate the 3D orbital plane, then project through a perspective camera.
+// Near-side planets grow naturally; far-side planets shrink with depth.
+function projectPoint(point: { x: number; y: number; z: number }, camera: Camera, roll = 0) {
+  const x = point.x * Math.cos(camera.rotY) - point.z * Math.sin(camera.rotY);
+  const z = point.x * Math.sin(camera.rotY) + point.z * Math.cos(camera.rotY);
+  const y = -point.y * Math.cos(camera.rotX) - z * Math.sin(camera.rotX);
+  const depth = -point.y * Math.sin(camera.rotX) + z * Math.cos(camera.rotX);
+  const perspective = 3.2 / (3.2 + depth);
+  return {
+    x: (x * Math.cos(roll) - y * Math.sin(roll)) * perspective,
+    y: (x * Math.sin(roll) + y * Math.cos(roll)) * perspective,
+    depth, perspective,
+  };
+}
+
+function orbitalLayout(W: number, H: number, camera: Camera) {
+  const compact = W <= 768 || H < 500;
+  const top = compact ? 154 : 100;
+  const bottom = H < 500 ? 88 : compact ? 140 : 88;
+  const height = Math.max(80, H - top - bottom);
+  // Use the available portrait height for the inclined system. Head-on views
+  // return to a horizontal orientation; top/bottom retain a circular frame.
+  const roll = W <= 768 && (height - 52) / (W - 48) > 1.3
+    ? Math.PI / 2 * Math.min(1, Math.abs(camera.rotX) / 0.5) : 0;
+  let minX = -0.1, maxX = 0.1, minY = -0.1, maxY = 0.1;
+  for (const orbit of ORBITS) {
+    for (let i = 0; i < 64; i++) {
+      const p = projectPoint(orbitalPoint(orbit, i * Math.PI / 32), camera, roll);
+      minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+      minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+    }
+  }
+  const fitScale = Math.max(24, Math.min((W - (compact ? 48 : 144)) / (maxX - minX), (height - (compact ? 52 : 112)) / (maxY - minY)));
+  const scale = fitScale * camera.zoom;
+  return {
+    cx: W / 2 - (maxX + minX) * scale / 2,
+    cy: top + height / 2 - (maxY + minY) * scale / 2,
+    scale, roll, compact,
+    nodeScale: (compact
+      ? Math.max(0.55, Math.min(1.18, fitScale / 420))
+      : Math.max(1.25, Math.min(2.0, fitScale / 270))) * camera.zoom,
+  };
+}
+
+// Background particles
 const BG_COUNT    = 120;
 const bgParticles = Array.from({ length: BG_COUNT }, () => ({
   x:  Math.random(), y: Math.random(),
@@ -203,14 +199,14 @@ const NEBULAE = Array.from({ length: 5 }, (_, i) => ({
   opacity: 0.022 + Math.random() * 0.018,
 }));
 
-// ─── Exported handle ──────────────────────────────────────────────────────────
+// Exported handle
 export interface GraphHandle {
-  getHovered(): SimNode | null;
   getNodes(): SimNode[];
+  getNodeAt(x: number, y: number): SimNode | null;
   focusNode(idx: number): void;
 }
 
-// ─── Graph props ──────────────────────────────────────────────────────────────
+// Graph props
 export interface GraphProps {
   canvas:    HTMLCanvasElement | null;
   onHover:   (node: HoveredNode | null) => void;
@@ -221,17 +217,16 @@ export interface GraphProps {
   mousePos:  React.MutableRefObject<{ x: number; y: number }>;
   onFps:     (fps: number) => void;
   filterCat: string | null;
-  searchIdx: number | null;
 }
 
-// ─── Cross-browser rounded rect (Safari < 16 has no ctx.roundRect) ────────────
+// Cross-browser rounded rect (Safari < 16 has no ctx.roundRect)
 function roundedRectPath(
   ctx: CanvasRenderingContext2D,
   x: number, y: number, w: number, h: number, r: number,
 ) {
   ctx.beginPath();
-  if (typeof (ctx as any).roundRect === "function") {
-    (ctx as any).roundRect(x, y, w, h, r);
+  if (typeof ctx.roundRect === "function") {
+    ctx.roundRect(x, y, w, h, r);
     return;
   }
   const rad = Math.min(r, w / 2, h / 2);
@@ -243,13 +238,13 @@ function roundedRectPath(
   ctx.closePath();
 }
 
-// ─── Pill label renderer ──────────────────────────────────────────────────────
+// Pill label renderer
 /**
  * Draws a compact, clean label pill above a node.
  *
  * Design decisions:
  * - Font size is clamped to [9, 13] px and scales with projScale + hoverScale
- *   but only when the node is large enough to read (projScale > 0.55).
+ *   with collision checks keeping the labels readable on smaller screens.
  * - LIVE nodes get a small teal dot badge instead of " ↗ LIVE" suffix so the
  *   pill stays short.
  * - Pill width is driven by the *name only*, keeping things tidy.
@@ -260,11 +255,11 @@ function drawLabel(
   now: number,
   dimAlpha: number,
   reducedMotion: boolean,
+  occupied: { x: number; y: number; w: number; h: number }[],
 ) {
   const cfg = getCat(nd.category);
 
-  // Only show label when node is readable
-  const labelAlpha = Math.min(1, dimAlpha * (nd.projScale > 0.55 ? 1.0 : nd.hovered ? 0.8 : 0));
+  const labelAlpha = Math.min(1, dimAlpha);
   if (labelAlpha <= 0.02) return;
 
   const r = nd.radius * nd.projScale * NODE_SCALE * nd.hoverScale;
@@ -277,16 +272,26 @@ function drawLabel(
   ctx.textAlign   = "center";
   ctx.textBaseline = "middle";
 
-  const nameText = nd.name;
+  let nameText = nd.name;
+  const maxTextWidth = Math.min(210, window.innerWidth - 76);
+  while (nameText.length > 1 && ctx.measureText(nameText).width > maxTextWidth) {
+    nameText = nameText.replace(/…$/, "").slice(0, -1) + "…";
+  }
   const tw   = ctx.measureText(nameText).width;
-  const px   = 7, py = 3.5;
+  const px   = 10, py = 3.5;
   // Extra right padding for the live dot
   const extraRight = nd.demoUrl ? px + 10 : 0;
-  const pw   = tw + px * 2 + extraRight;
+  const pw   = tw + px * 2 + extraRight + 8;
   const ph   = fontSize + py * 2;
   const gap  = 6;
-  const plx  = sx - pw / 2;
+  const plx  = Math.max(8, Math.min(window.innerWidth - pw - 8, sx - pw / 2));
   const ply  = sy - r - ph - gap;
+
+  if (!nd.hovered && !nd.selected && occupied.some(box =>
+    plx < box.x + box.w + 4 && plx + pw + 4 > box.x &&
+    ply < box.y + box.h + 4 && ply + ph + 4 > box.y
+  )) return;
+  occupied.push({ x: plx, y: ply, w: pw, h: ph });
 
   ctx.save();
   ctx.globalAlpha = labelAlpha;
@@ -314,8 +319,8 @@ function drawLabel(
   ctx.shadowColor = "rgba(0,0,0,0.9)";
   ctx.shadowBlur  = 4;
   // Shift text left when live badge present
-  const textOffsetX = nd.demoUrl ? -5 : 0;
-  ctx.fillText(nameText, sx + textOffsetX, ply + ph / 2);
+  const textOffsetX = (8 - extraRight) / 2;
+  ctx.fillText(nameText, plx + pw / 2 + textOffsetX, ply + ph / 2);
   ctx.shadowBlur = 0;
 
   // LIVE badge — small pulsing dot on the right (static dot if reduced motion)
@@ -349,60 +354,59 @@ function drawLabel(
   ctx.restore();
 }
 
-// ─── Core node scale multiplier ───────────────────────────────────────────────
-// Was 18 — reduced to 12 for tighter, cleaner nodes.
-// Adjust this single constant to resize all nodes globally.
-const NODE_SCALE = 12;
+// Core node scale multiplier
+// Keep the luminous core compact so the glow and orbit have breathing room.
+const NODE_SCALE = 3.0;
 
-// ─── Graph ────────────────────────────────────────────────────────────────────
+function hitTest(nodes: SimNode[], x: number, y: number): SimNode | null {
+  let hit: SimNode | null = null;
+  let nearby: SimNode | null = null, nearest = Infinity;
+  for (const nd of nodes) {
+    const core = nd.radius * nd.projScale * NODE_SCALE * nd.hoverScale;
+    const radius = Math.max(12, core * 1.3);
+    const distance = Math.hypot(nd.sx - x, nd.sy - y);
+    if (distance < core && (!hit || nd.projDepth < hit.projDepth)) hit = nd;
+    if (distance < radius && distance < nearest) { nearby = nd; nearest = distance; }
+  }
+  return hit ?? nearby;
+}
+
+// Graph
 const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
   { canvas, onHover, onSelect, onNodeCount, camera, dragState, mousePos,
-    onFps, filterCat, searchIdx },
+    onFps, filterCat },
   ref
 ) {
   const nodesRef    = useRef<SimNode[]>([]);
-  const edgesRef    = useRef<Edge[]>([]);
   const hoveredRef  = useRef<SimNode | null>(null);
-  const selectedRef = useRef<SimNode | null>(null);
   const rafRef      = useRef<number>(0);
   const fpsRef      = useRef({ frames: 0, last: performance.now() });
-  const autoRotRef  = useRef(0);
-  const selectedIdx = useRef(-1);
+  const orbitalTimeRef = useRef(0);
   const reducedMotionRef = useRef(false);
 
   // Cached visibility (only depends on filterCat, not on every animation
   // frame) — avoids rebuilding filter()/Set()/filter() 60x/sec.
   const visNodesRef = useRef<SimNode[]>([]);
-  const visEdgesRef = useRef<Edge[]>([]);
 
   const recomputeVisibility = useCallback(() => {
     const nodes = nodesRef.current;
-    const edges = edgesRef.current;
     const vis = nodes.filter(n => n.filtered);
     visNodesRef.current = vis;
-    const visSet = new Set(vis.map(n => n.index ?? 0));
-    visEdgesRef.current = edges.filter(e => visSet.has(e.a) && visSet.has(e.b));
   }, []);
 
   useImperativeHandle(ref, () => ({
-    getHovered: () => hoveredRef.current,
     getNodes:   () => nodesRef.current,
+    getNodeAt:  (x, y) => hitTest(visNodesRef.current, x, y),
     focusNode:  (idx: number) => {
       const nd = nodesRef.current[idx];
       if (!nd) return;
-      selectedRef.current = nd;
-      selectedIdx.current = idx;
       nodesRef.current.forEach(n => n.selected = false);
       nd.selected = true;
       onSelect(nd);
-      camera.targetRotX = 0.1;
-      camera.targetRotY += 0.3;
-      camera.targetZoom  = 1.4;
     },
   }));
 
-  // Respect prefers-reduced-motion: kill auto-rotate and calm the constant
-  // pulsing/orbiting so the scene isn't a11y-hostile motion by default.
+  // Keep orbital motion and energy pulses still when reduced motion is requested.
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     reducedMotionRef.current = mq.matches;
@@ -411,50 +415,44 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  // Build nodes & edges
+  // Space each category evenly around its own orbital lane.
   useEffect(() => {
     const raw = getNormalizedData(portfolioData);
+    const categories = raw.map(d => categorize(d.name ?? "", d.complexity_score ?? 0));
+    const counts = categories.reduce<Record<string, number>>((acc, cat) => {
+      acc[cat] = (acc[cat] ?? 0) + 1;
+      return acc;
+    }, {});
+    const slots: Record<string, number> = {};
     const nodes: SimNode[] = raw.map((d, i) => {
       const name = d.name ?? `Project ${i}`;
       const cat = categorize(name, d.complexity_score ?? 0);
       const cfg = getCat(cat);
-      const theta = Math.random() * Math.PI * 2;
-      const phi   = Math.acos(2 * Math.random() - 1);
-      const r     = 90 + Math.random() * 70;
+      const orbitIndex = ORBITS.findIndex(orbit => orbit.category === cat);
+      const slot = slots[cat] ?? 0;
+      slots[cat] = slot + 1;
+      const orbitAngle = -Math.PI / 2 + orbitIndex * 0.32 + slot * Math.PI * 2 / counts[cat];
 
       return {
         name,
         url:         d.url ?? "#",
-        demoUrl:     resolveDemoUrl(name, d.demo_url),
+        demoUrl:     resolveDemoUrl(name, d.demoUrl ?? d.demo_url),
         category:    cat,
         description: `Complexity score: ${Math.round(d.complexity_score ?? 0).toLocaleString()}`,
-        tags:        d.tags ?? ["AI", "Development"],
+        tags:        d.tags ?? [],
         index:       i,
         complexity:  d.complexity_score ?? 0,
-        x: r * Math.sin(phi) * Math.cos(theta),
-        y: r * Math.sin(phi) * Math.sin(theta),
-        z: r * Math.cos(phi),
-        vx: 0, vy: 0, vz: 0,
+        x: 0, y: 0, z: 0,
+        orbitIndex, orbitAngle,
         sx: 0, sy: 0, projScale: 1, projDepth: 0,
         radius:      cfg.radius,
         hovered:     false, selected: false, filtered: true,
         hoverScale: 1,
         pulsePhase: Math.random() * Math.PI * 2,
-        trailX:      [], trailY: [],
       };
     });
 
-    const edges: Edge[] = [];
-    for (let i = 0; i < nodes.length; i++)
-      for (let j = i + 1; j < nodes.length; j++) {
-        const same = nodes[i].category === nodes[j].category;
-        if (same || Math.random() < 0.05)
-          edges.push({ a: i, b: j });
-      }
-
-    for (let t = 0; t < 160; t++) tickSimulation(nodes, edges, -1);
     nodesRef.current = nodes;
-    edgesRef.current = edges;
     onNodeCount(nodes.length);
     recomputeVisibility();
   }, [onNodeCount, recomputeVisibility]);
@@ -466,27 +464,13 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
     recomputeVisibility();
   }, [filterCat, recomputeVisibility]);
 
-  useEffect(() => {
-    if (searchIdx !== null) {
-      const nd = nodesRef.current[searchIdx];
-      if (nd) {
-        nodesRef.current.forEach(n => { n.selected = false; });
-        nd.selected = true;
-        selectedRef.current = nd;
-        selectedIdx.current = searchIdx;
-        onSelect(nd);
-        camera.targetZoom  = 1.5;
-        camera.targetRotY += 0.4;
-      }
-    }
-  }, [searchIdx, camera, onSelect]);
-
   // Render loop
   useEffect(() => {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    let lastFrame = 0;
     const draw = (now: number) => {
       const W = window.innerWidth, H = window.innerHeight;
       const nodes = nodesRef.current;
@@ -498,25 +482,35 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         fpsRef.current = { frames: 0, last: now };
       }
 
-      if (!dragState.current.active && !reducedMotion) autoRotRef.current += 0.00055;
-      camera.rotX += (camera.targetRotX - camera.rotX)                      * 0.08;
-      camera.rotY += (camera.targetRotY + autoRotRef.current - camera.rotY) * 0.06;
-      camera.zoom += (camera.targetZoom - camera.zoom)                      * 0.10;
-
-      tickSimulation(nodes, edgesRef.current, selectedIdx.current);
-
+      const dt = lastFrame ? Math.min(0.05, (now - lastFrame) / 1000) : 0;
+      lastFrame = now;
+      if (!dragState.current.active && !reducedMotion && !hoveredRef.current && !nodes.some(nd => nd.selected)) {
+        orbitalTimeRef.current += dt;
+      }
+      const ease = reducedMotion ? 1 : 1 - Math.exp(-dt * 9);
+      camera.rotX += (camera.targetRotX - camera.rotX) * ease;
+      camera.rotY += (camera.targetRotY - camera.rotY) * ease;
+      camera.zoom += (camera.targetZoom - camera.zoom) * ease;
+      const layout = orbitalLayout(W, H, camera);
       for (const nd of nodes) {
-        const p = project(nd.x, nd.y, nd.z, camera, W, H);
-        nd.trailX.unshift(nd.sx); nd.trailY.unshift(nd.sy);
-        if (nd.trailX.length > 8) { nd.trailX.pop(); nd.trailY.pop(); }
-        nd.sx = p.sx; nd.sy = p.sy; nd.projScale = p.scale; nd.projDepth = p.depth;
-        const targetScale = nd.hovered ? 1.55 : nd.selected ? 1.38 : 1.0;
+        const orbit = ORBITS[nd.orbitIndex];
+        // Kepler-inspired motion: outer lanes move more slowly. One angular
+        // speed per lane preserves the separation of every pair of nodes.
+        const angle = nd.orbitAngle + orbitalTimeRef.current * 0.025 / Math.pow(orbit.radius, 1.5);
+        const point = orbitalPoint(orbit, angle);
+        nd.x = point.x; nd.y = point.y; nd.z = point.z;
+        const p = projectPoint(point, camera, layout.roll);
+        nd.sx = layout.cx + p.x * layout.scale;
+        nd.sy = layout.cy + p.y * layout.scale;
+        nd.projScale = layout.nodeScale * p.perspective;
+        nd.projDepth = p.depth;
+        const targetScale = nd.hovered ? 1.25 : nd.selected ? 1.18 : 1;
         nd.hoverScale += (targetScale - nd.hoverScale) * 0.13;
       }
 
       ctx.clearRect(0, 0, W, H);
 
-      // ── Nebula atmosphere ─────────────────────────────────────────────────
+      // Nebula atmosphere
       for (const nb of NEBULAE) {
         const hex = nb.color.slice(1);
         const r = parseInt(hex.slice(0,2),16);
@@ -532,30 +526,13 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
         ctx.fill();
       }
 
-      // ── Background particles ───────────────────────────────────────────────
+      // Background particles
       for (const p of bgParticles) {
-        p.x += p.vx; p.y += p.vy;
+        if (!reducedMotion) { p.x += p.vx * dt * 60; p.y += p.vy * dt * 60; }
         if (p.x < 0) p.x = 1; if (p.x > 1) p.x = 0;
         if (p.y < 0) p.y = 1; if (p.y > 1) p.y = 0;
       }
       ctx.save();
-      for (let i = 0; i < bgParticles.length; i++) {
-        const pi = bgParticles[i];
-        for (let j = i + 1; j < bgParticles.length; j++) {
-          const pj = bgParticles[j];
-          const dx = (pi.x - pj.x) * W, dy = (pi.y - pj.y) * H;
-          const d  = Math.sqrt(dx*dx + dy*dy);
-          if (d < 90) {
-            ctx.globalAlpha = (1 - d/90) * 0.07;
-            ctx.strokeStyle = "#a78bfa";
-            ctx.lineWidth   = 0.4;
-            ctx.beginPath();
-            ctx.moveTo(pi.x*W, pi.y*H);
-            ctx.lineTo(pj.x*W, pj.y*H);
-            ctx.stroke();
-          }
-        }
-      }
       for (const p of bgParticles) {
         ctx.globalAlpha = p.opacity * 0.5;
         ctx.fillStyle   = p.hue;
@@ -565,160 +542,146 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
       }
       ctx.restore();
 
-      // ── Edges ─────────────────────────────────────────────────────────────
       const visNodes = visNodesRef.current;
-      const visEdges = visEdgesRef.current;
-      const sortedEdges = [...visEdges].sort((e1, e2) =>
-          (nodes[e1.a].projScale + nodes[e1.b].projScale) -
-          (nodes[e2.a].projScale + nodes[e2.b].projScale)
-      );
-
       ctx.save();
-      for (const e of sortedEdges) {
-        const na = nodes[e.a], nb = nodes[e.b];
-        const avg  = (na.projScale + nb.projScale) / 2;
-        const isHl = na.hovered || nb.hovered || na.selected || nb.selected;
-        const isSel = (na.selected || nb.selected);
-        const dx = na.sx - nb.sx, dy = na.sy - nb.sy;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const maxDist = window.innerWidth * 0.4;
-        const minDist = window.innerWidth * 0.1;
-        let edgeOpacity = 1 - (dist - minDist) / (maxDist - minDist);
-        edgeOpacity = Math.max(0, Math.min(1, edgeOpacity));
-
-        if (isSel) {
-          const selNd = na.selected ? na : nb;
-          const cfg   = getCat(selNd.category);
-          const grad  = ctx.createLinearGradient(na.sx, na.sy, nb.sx, nb.sy);
-          grad.addColorStop(0, cfg.glow + "0.6)");
-          grad.addColorStop(1, cfg.glow + "0.06)");
-          ctx.globalAlpha = 0.55 * edgeOpacity;
-          ctx.strokeStyle = grad;
-          ctx.lineWidth   = 1.4;
-        } else {
-          const baseOpacity = Math.min(0.15, avg * 0.18) * (isHl ? 4 : 1);
-          ctx.globalAlpha = baseOpacity * edgeOpacity;
-          ctx.strokeStyle = isHl ? getCat(na.hovered ? na.category : nb.category).color : "#00f5c4";
-          ctx.lineWidth   = isHl ? 1.1 : 0.8;
-        }
-        ctx.beginPath();
-        ctx.moveTo(na.sx, na.sy);
-        ctx.lineTo(nb.sx, nb.sy);
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      // ── Node trails ───────────────────────────────────────────────────────
-      ctx.save();
-      for (const nd of visNodes) {
-        if (!nd.hovered && !nd.selected) continue;
-        const cfg = getCat(nd.category);
-        for (let t = 0; t < nd.trailX.length; t++) {
-          const a = (1 - t / nd.trailX.length) * 0.18;
-          ctx.globalAlpha = a;
-          ctx.fillStyle   = cfg.color;
+      for (const orbit of ORBITS) {
+        const laneNodes = nodes.filter(nd => nd.category === orbit.category);
+        if (!laneNodes.length) continue;
+        const active = laneNodes.some(nd => nd.filtered);
+        const highlighted = laneNodes.some(nd => nd.hovered || nd.selected);
+        const path = Array.from({ length: 129 }, (_, i) =>
+          projectPoint(orbitalPoint(orbit, i * Math.PI / 64), camera, layout.roll)
+        );
+        // Fainter far arcs and sharper foreground arcs reveal the orbital plane.
+        for (const front of [false, true]) {
+          ctx.strokeStyle = getCat(orbit.category).color;
+          ctx.globalAlpha = active ? (highlighted ? 0.7 : front ? 0.46 : 0.16) : 0.05;
+          ctx.lineWidth = front ? 1.25 : 0.8;
           ctx.beginPath();
-          const tr = nd.radius * nd.projScale * NODE_SCALE * (1 - t * 0.1);
-          ctx.arc(nd.trailX[t], nd.trailY[t], Math.max(1, tr), 0, Math.PI*2);
-          ctx.fill();
+          for (let i = 1; i < path.length; i++) {
+            const a = path[i - 1], b = path[i];
+            if (((a.depth + b.depth) < 0) !== front) continue;
+            ctx.moveTo(layout.cx + a.x * layout.scale, layout.cy + a.y * layout.scale);
+            ctx.lineTo(layout.cx + b.x * layout.scale, layout.cy + b.y * layout.scale);
+          }
+          ctx.stroke();
         }
       }
       ctx.restore();
 
-      // ── Nodes (back to front) ─────────────────────────────────────────────
-      const sortedNodes = [...visNodes].sort((a, b) => a.projScale - b.projScale);
+      const drawCenter = () => {
+        const r = Math.min(layout.nodeScale * (layout.compact ? 40 : 38), layout.scale * 0.13);
+        const heat = reducedMotion ? 0 : Math.sin(now * 0.0012) * 0.04;
+        ctx.save();
+        const halo = ctx.createRadialGradient(layout.cx, layout.cy, r * 0.6, layout.cx, layout.cy, r * 5);
+        halo.addColorStop(0, `rgba(255,210,45,${0.38 + heat})`);
+        halo.addColorStop(0.25, "rgba(255,174,20,0.15)");
+        halo.addColorStop(0.65, "rgba(255,145,12,0.035)");
+        halo.addColorStop(1, "rgba(255,145,12,0)");
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(layout.cx, layout.cy, r * 5, 0, Math.PI * 2);
+        ctx.fill();
+        // A soft corona radiates outward without obscuring the orbital lanes.
+        const wave = reducedMotion ? 0.2 : (now * 0.00022) % 1;
+        ctx.strokeStyle = "#ffd94a";
+        ctx.globalAlpha = reducedMotion ? 0.08 : 0.16 * (1 - wave) ** 2;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(layout.cx, layout.cy, r * (1.25 + wave * 2.5), 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        const sphere = ctx.createRadialGradient(layout.cx-r*0.35, layout.cy-r*0.4, 0, layout.cx, layout.cy, r);
+        sphere.addColorStop(0, "#fffbd4");
+        sphere.addColorStop(0.20, "#ffe86b");
+        sphere.addColorStop(0.55, "#ffd21c");
+        sphere.addColorStop(0.82, "#f5a409");
+        sphere.addColorStop(1, "#ba5b06");
+        ctx.fillStyle = sphere;
+        ctx.shadowColor = "#ffcf33";
+        ctx.shadowBlur = r * 0.7;
+        ctx.beginPath();
+        ctx.arc(layout.cx, layout.cy, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        if (W > 768 && H > 500) {
+          ctx.font = "500 10px 'JetBrains Mono',monospace";
+          ctx.textAlign = "center";
+          ctx.fillStyle = "rgba(255,233,167,0.8)";
+          ctx.fillText("ENGINEERING JOURNEY", layout.cx, layout.cy + r + 24);
+        }
+        ctx.restore();
+      };
 
+      // Nodes (back to front)
+      const sortedNodes = [...visNodes].sort((a, b) => b.projDepth - a.projDepth);
+
+      let centerDrawn = false;
       for (const nd of sortedNodes) {
+        if (!centerDrawn && nd.projDepth <= 0) { drawCenter(); centerDrawn = true; }
         const cfg  = getCat(nd.category);
         // Core render radius — NODE_SCALE is the global tuning knob
         const r    = nd.radius * nd.projScale * NODE_SCALE * nd.hoverScale;
         const { sx, sy } = nd;
         if (sx < -r*5 || sx > W+r*5 || sy < -r*5 || sy > H+r*5) continue;
 
-        const alpha    = Math.min(1, nd.projScale * 1.5);
+        const alpha    = Math.max(0.72, Math.min(1, 1 - nd.projDepth * 0.18));
         const dimAlpha = nd.filtered ? alpha : alpha * 0.12;
 
         ctx.save();
         ctx.globalAlpha = dimAlpha;
 
-        // ── Selection dashed ring ──────────────────────────────────────────
-        if (nd.selected) {
-          const t = reducedMotion ? 0 : now * 0.001;
-          const pulseR = r * (2.6 + Math.sin(t * 2.5) * 0.35);
-          ctx.globalAlpha = dimAlpha * (0.45 + Math.sin(t * 2.5) * 0.2);
+        if (nd.hovered || nd.selected) {
           ctx.strokeStyle = cfg.color;
-          ctx.lineWidth   = 1.2;
-          ctx.setLineDash([5, 4]);
-          ctx.lineDashOffset = -t * 12;
+          ctx.globalAlpha = 0.75;
+          ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.arc(sx, sy, pulseR, 0, Math.PI*2);
+          ctx.arc(sx, sy, r + 5, 0, Math.PI * 2);
           ctx.stroke();
-          ctx.setLineDash([]);
         }
         ctx.globalAlpha = dimAlpha;
 
-        // ── Outer glow ────────────────────────────────────────────────────
-        const glowR = r * 3.8;
+        // Outer glow
+        const energy = reducedMotion ? 0.2 : (now * 0.00025 + nd.pulsePhase / (Math.PI * 2)) % 1;
+        const glowR = r * 3.5;
         const grd = ctx.createRadialGradient(sx, sy, 0, sx, sy, glowR);
-        grd.addColorStop(0,   cfg.glow + "0.18)");
-        grd.addColorStop(0.45, cfg.glow + "0.06)");
+        grd.addColorStop(0,   cfg.glow + "0.38)");
+        grd.addColorStop(0.30, cfg.glow + "0.16)");
+        grd.addColorStop(0.65, cfg.glow + "0.025)");
         grd.addColorStop(1,   cfg.glow + "0)");
         ctx.fillStyle = grd;
         ctx.beginPath();
         ctx.arc(sx, sy, glowR, 0, Math.PI*2);
         ctx.fill();
 
-        // ── LIVE orbit ring ───────────────────────────────────────────────
-        if (nd.demoUrl) {
-          const orbitAngle = reducedMotion ? 0 : (now * 0.0012 + nd.pulsePhase) % (Math.PI * 2);
-          ctx.save();
-          ctx.translate(sx, sy);
-          ctx.rotate(orbitAngle);
-          ctx.globalAlpha = dimAlpha * 0.55;
-          ctx.strokeStyle = "#00f5c4";
-          ctx.lineWidth   = 0.9;
-          ctx.setLineDash([6, 5, 2, 5]);
-          ctx.beginPath();
-          ctx.arc(0, 0, r * 2.1, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.restore();
-        }
-
-        // ── Pulse ring ────────────────────────────────────────────────────
-        const pulse  = reducedMotion ? 0 : (now * 0.001 + nd.pulsePhase) % (Math.PI * 2);
-        const ringR  = r * (1.9 + Math.sin(pulse * 0.9) * 0.22);
-        const ringA  = dimAlpha * (0.14 + Math.sin(pulse * 0.9) * 0.07) *
-          (nd.hovered ? 2.0 : nd.selected ? 2.6 : 1);
-        ctx.globalAlpha = ringA;
+        ctx.globalAlpha = dimAlpha * (reducedMotion ? 0.06 : 0.12 * (1 - energy) ** 2);
         ctx.strokeStyle = cfg.color;
-        ctx.lineWidth   = 0.6;
+        ctx.lineWidth = 0.8;
         ctx.beginPath();
-        ctx.arc(sx, sy, ringR, 0, Math.PI*2);
+        ctx.arc(sx, sy, r * (1.25 + energy * 1.5), 0, Math.PI * 2);
         ctx.stroke();
 
-        // Inner ring
-        ctx.globalAlpha = dimAlpha * (0.09 + Math.sin(pulse * 1.3 + 1) * 0.04);
-        ctx.beginPath();
-        ctx.arc(sx, sy, r * 1.4 + Math.sin(pulse * 1.5) * 1.5, 0, Math.PI*2);
-        ctx.stroke();
-
-        // ── Core sphere ───────────────────────────────────────────────────
+        // Core sphere
         ctx.globalAlpha = dimAlpha;
         const coreGrd = ctx.createRadialGradient(sx - r*0.35, sy - r*0.35, 0, sx, sy, r);
         coreGrd.addColorStop(0,    "#ffffff");
-        coreGrd.addColorStop(0.25, cfg.color + "ee");
-        coreGrd.addColorStop(0.7,  cfg.color + "88");
-        coreGrd.addColorStop(1,    cfg.glow + "0.15)");
+        coreGrd.addColorStop(0.18, cfg.color);
+        coreGrd.addColorStop(0.55, cfg.color);
+        coreGrd.addColorStop(0.82, cfg.color + "bb");
+        coreGrd.addColorStop(1,    cfg.color + "65");
+        ctx.fillStyle = "#08131e";
+        ctx.beginPath();
+        ctx.arc(sx, sy, r, 0, Math.PI * 2);
+        ctx.fill();
         ctx.fillStyle   = coreGrd;
         ctx.shadowColor = cfg.color;
-        ctx.shadowBlur  = r * 3.0;
+        ctx.shadowBlur  = r * 1.4;
         ctx.beginPath();
         ctx.arc(sx, sy, r, 0, Math.PI*2);
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // ── Specular highlight ────────────────────────────────────────────
+        // Specular highlight
         const specGrd = ctx.createRadialGradient(
           sx - r*0.3, sy - r*0.35, 0,
           sx - r*0.25, sy - r*0.25, r*0.48
@@ -733,19 +696,27 @@ const Graph = forwardRef<GraphHandle, GraphProps>(function Graph(
 
         ctx.restore();
 
-        // ── Label ─────────────────────────────────────────────────────────
-        drawLabel(ctx, nd, now, dimAlpha, reducedMotion);
       }
 
-      // ── Hover hit-test ─────────────────────────────────────────────────────
-      const mx = mousePos.current.x, my = mousePos.current.y;
-      let hit: SimNode | null = null, hitDist = Infinity;
-      for (const nd of visNodes) {
-        const r  = nd.radius * nd.projScale * NODE_SCALE * nd.hoverScale * 1.5;
-        const dx = nd.sx - mx, dy = nd.sy - my;
-        const d  = Math.sqrt(dx*dx + dy*dy);
-        if (d < r && d < hitDist) { hitDist = d; hit = nd; }
+      if (!centerDrawn) drawCenter();
+
+      // Draw labels last, prioritizing the active node and avoiding other
+      // labels and sphere cores on narrow screens.
+      const occupied = visNodes.map(nd => {
+        const r = nd.radius * nd.projScale * NODE_SCALE * nd.hoverScale;
+        return { x: nd.sx - r, y: nd.sy - r, w: r * 2, h: r * 2 };
+      });
+      const labelNodes = [...sortedNodes].sort((a, b) =>
+        Number(b.hovered || b.selected) - Number(a.hovered || a.selected) || b.projScale - a.projScale
+      );
+      for (const nd of labelNodes) {
+        if (W <= 768 && !nd.hovered && !nd.selected) continue;
+        drawLabel(ctx, nd, now, Math.min(1, nd.projScale * 1.5), reducedMotion, occupied);
       }
+
+      // Hover hit-test
+      const mx = mousePos.current.x, my = mousePos.current.y;
+      const hit = hitTest(visNodes, mx, my);
       for (const nd of nodes) nd.hovered = nd === hit;
 
       if (hit !== hoveredRef.current) {

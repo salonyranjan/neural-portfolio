@@ -9,8 +9,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'Neural Portfolio | Knowledge Graph',
-  description: 'An interactive 3D neural network visualization of my portfolio',
+  title: 'Neural Portfolio | Engineering in Orbit',
+  description: 'An interactive orbital portfolio connecting physics and my software engineering journey',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -20,12 +20,11 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Neural Portfolio',
-    description: 'An interactive 3D neural network visualization of my portfolio',
+    description: 'An interactive orbital portfolio connecting physics and my software engineering journey',
     type: 'website',
   },
 };
 
-// Moved themeColor to the viewport export
 export const viewport: Viewport = {
   themeColor: '#050510',
 };
@@ -40,7 +39,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap"
+          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap"
           rel="stylesheet"
         />
       </head>

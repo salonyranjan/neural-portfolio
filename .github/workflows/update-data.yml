@@ -19,11 +19,10 @@ jobs:
           python-version: '3.9'
 
       - name: Install dependencies
-        run: pip install PyGithub
+        run: pip install -r data-engine/requirements.txt
 
       - name: Run Fetcher Script
         env:
-          # Use your new secret name here
           MY_PERSONAL_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
         run: python data-engine/fetcher.py
 

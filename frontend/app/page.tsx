@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from 'next/dynamic';
-import { useState, useEffect } from 'react';
 
 const Scene = dynamic(() => import('../components/Scene'), {
   ssr: false,
@@ -9,34 +8,8 @@ const Scene = dynamic(() => import('../components/Scene'), {
 });
 
 function Loader() {
-  const [progress, setProgress] = useState(0);
-  const [phase, setPhase] = useState(0);
-
-  const phases = [
-    'Initializing neural pathways...',
-    'Mapping knowledge nodes...',
-    'Calibrating force vectors...',
-    'Rendering synaptic connections...',
-    'Neural map ready.',
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((p) => {
-        const next = p + Math.random() * 12;
-        if (next >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        setPhase(Math.floor((next / 100) * phases.length));
-        return next;
-      });
-    }, 120);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <div style={{
+    <div role="status" aria-label="Loading portfolio" style={{
       position: 'fixed', inset: 0,
       background: '#050510',
       display: 'flex', flexDirection: 'column',
@@ -89,7 +62,8 @@ function Loader() {
       }}>
         <div style={{
           position: 'absolute', left: 0, top: 0, bottom: 0,
-          width: `${progress}%`,
+          width: '40%',
+          animation: 'loadingSweep 1.2s ease-in-out infinite',
           background: 'linear-gradient(90deg, #00ffcc, #0088ff)',
           boxShadow: '0 0 12px #00ffcc',
           transition: 'width 0.1s ease',
@@ -99,13 +73,11 @@ function Loader() {
 
       {/* Status text */}
       <div style={{ fontSize: 11, letterSpacing: '0.15em', opacity: 0.6, marginBottom: 8 }}>
-        {phases[Math.min(phase, phases.length - 1)]}
-      </div>
-      <div style={{ fontSize: 10, letterSpacing: '0.2em', opacity: 0.3 }}>
-        {Math.round(progress)}%
+        Loading orbital scene…
       </div>
 
       <style>{`
+        @keyframes loadingSweep { from { transform:translateX(-100%); } to { transform:translateX(350%); } }
         @keyframes gridPulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
         @keyframes orbPulse { 0%,100%{transform:scale(1);box-shadow:0 0 60px #00ffcc22,inset 0 0 40px #00ffcc11} 50%{transform:scale(1.05);box-shadow:0 0 90px #00ffcc44,inset 0 0 60px #00ffcc22} }
       `}</style>
@@ -115,7 +87,7 @@ function Loader() {
 
 export default function Page() {
   return (
-    <main style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
+    <main style={{ width: '100vw', height: '100dvh', margin: 0, padding: 0 }}>
       <Scene />
     </main>
   );
