@@ -2,13 +2,13 @@ name: Update Portfolio Data
 on:
   schedule:
     - cron: '0 0 * * *' # Runs daily at midnight
-  workflow_dispatch:      # Allows you to trigger it manually from the Actions tab
+  workflow_dispatch:  
 
 jobs:
   update-data:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 
     permissions:
-      contents: write # Required to allow the action to push changes back
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
